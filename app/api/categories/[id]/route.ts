@@ -25,7 +25,12 @@ export async function PUT(
     if (color !== undefined) updates.color = color || null;
     if (order !== undefined) updates.order = order;
 
-    const category = await updateCategory(session.user.id, id, updates);
+    const normalizedUpdates = {
+      ...updates,
+      color: updates.color ?? undefined,
+    };
+
+    const category = await updateCategory(session.user.id, id, normalizedUpdates);
     return NextResponse.json(category);
   } catch (error: any) {
     console.error('Error updating category:', error);
