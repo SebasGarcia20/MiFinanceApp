@@ -3,9 +3,11 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { updateCategory, deleteCategory } from '@/lib/db-helpers';
 
+type Context = { params: Promise<{ id: string }> };
+
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: Context
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -14,6 +16,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const { id } = await params;
     const body = await request.json();
     const { name, color, order } = body;
 
@@ -22,7 +25,7 @@ export async function PUT(
     if (color !== undefined) updates.color = color || null;
     if (order !== undefined) updates.order = order;
 
-    const category = await updateCategory(session.user.id, params.id, updates);
+    const category = await updateCategory(session.user.id, id, updates);
     return NextResponse.json(category);
   } catch (error: any) {
     console.error('Error updating category:', error);
@@ -35,7 +38,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: Context
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -44,7 +47,8 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    await deleteCategory(session.user.id, params.id);
+    const { id } = await params;
+    await deleteCategory(session.user.id, id);
     return NextResponse.json({ success: true });
   } catch (error: any) {
     console.error('Error deleting category:', error);
