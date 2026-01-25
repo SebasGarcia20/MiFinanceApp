@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { signIn, useSession } from 'next-auth/react';
 import FlowlyMark from '@/components/FlowlyMark';
@@ -28,7 +28,7 @@ function sanitizeCallbackUrl(raw: string | null) {
   return ok ? url : '/';
 }
 
-export default function LoginPage() {
+function LoginPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { data: session, status } = useSession();
@@ -175,5 +175,17 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LoginPageWrapper() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-accent-50 flex items-center justify-center">
+        <div className="text-accent-600">Loading...</div>
+      </div>
+    }>
+      <LoginPage />
+    </Suspense>
   );
 }
