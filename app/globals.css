@@ -1,0 +1,96 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+      'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+      sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background: linear-gradient(135deg, #f0fdfc 0%, #f8fafc 100%);
+  }
+
+  * {
+    @apply transition-colors duration-200;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply px-4 py-3 sm:py-2 bg-primary-400 text-white rounded-lg font-medium text-base sm:text-sm
+           hover:bg-primary-500 active:scale-95 shadow-soft
+           transition-all duration-200 ease-out min-h-[44px] sm:min-h-0;
+  }
+
+  .btn-secondary {
+    @apply px-4 py-3 sm:py-2 bg-accent-100 text-accent-700 rounded-lg font-medium text-base sm:text-sm
+           hover:bg-accent-200 active:scale-95 shadow-soft
+           transition-all duration-200 ease-out min-h-[44px] sm:min-h-0;
+  }
+
+  .btn-danger {
+    @apply px-3 py-2.5 sm:py-1.5 bg-red-500 text-white rounded-lg text-base sm:text-sm font-medium 
+           hover:bg-red-600 active:scale-95 shadow-soft
+           transition-all duration-200 ease-out min-h-[44px] sm:min-h-0;
+  }
+
+  .btn-success {
+    @apply px-3 py-2.5 sm:py-1.5 bg-green-500 text-white rounded-lg text-base sm:text-sm font-medium 
+           hover:bg-green-600 active:scale-95 shadow-soft
+           transition-all duration-200 ease-out min-h-[44px] sm:min-h-0;
+  }
+
+  .card {
+    @apply bg-white rounded-xl shadow-soft-lg p-6 
+           border border-accent-100/50
+           hover:shadow-soft transition-all duration-300;
+  }
+
+  .input-field {
+    @apply px-3 py-2 border border-accent-200 rounded-lg text-base sm:text-sm 
+           focus:outline-none focus:ring-2 focus:ring-primary-400/50 
+           focus:border-primary-400 transition-all duration-200
+           bg-white min-h-[44px] sm:min-h-0;
+  }
+
+  .badge {
+    @apply px-2 py-1 rounded-md text-xs font-medium
+           bg-primary-100 text-primary-700;
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Safe area support for iOS */
+  .safe-area-top {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .pb-safe {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
