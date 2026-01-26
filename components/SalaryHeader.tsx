@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { formatCurrency } from '@/lib/currency';
 import { parseCurrencyInput } from '@/lib/currency';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface SalaryHeaderProps {
   salary: number;
@@ -11,6 +12,7 @@ interface SalaryHeaderProps {
 }
 
 export default function SalaryHeader({ salary, grandTotal, onUpdateSalary }: SalaryHeaderProps) {
+  const { t } = useTranslation();
   const [isEditing, setIsEditing] = useState(false);
   const [salaryInput, setSalaryInput] = useState(salary.toString());
   const [isMounted, setIsMounted] = useState(false);
@@ -49,7 +51,7 @@ export default function SalaryHeader({ salary, grandTotal, onUpdateSalary }: Sal
     return (
       <div className="card bg-gradient-to-br from-primary-50/30 to-white border-primary-200/50 h-full min-h-[150px] flex flex-col p-5">
         <div className="flex flex-col items-end gap-1">
-          <div className="text-xs text-accent-600 font-medium">Monthly Salary</div>
+          <div className="text-xs text-accent-600 font-medium">{t('overview.monthlySalary')}</div>
           <div className="text-xl font-bold text-primary-600">$0</div>
         </div>
       </div>
@@ -63,7 +65,7 @@ export default function SalaryHeader({ salary, grandTotal, onUpdateSalary }: Sal
           <svg className="w-5 h-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
-          Monthly Salary
+          {t('overview.monthlySalary')}
         </h2>
         <div className="h-0.5 w-12 bg-primary-400 rounded-full"></div>
       </div>
@@ -104,10 +106,10 @@ export default function SalaryHeader({ salary, grandTotal, onUpdateSalary }: Sal
           <div className="px-3 py-2.5 bg-white/60 rounded-lg border border-primary-200/50 flex items-center justify-between gap-3">
             <div className="flex-1 min-w-0">
               <p className="text-xs font-semibold text-accent-800 mb-0.5">
-                No salary set yet
+                {t('overview.noSalarySet')}
               </p>
               <p className="text-xs text-accent-500 leading-relaxed">
-                Set your monthly salary to track spending
+                {t('overview.setSalaryDescription')}
               </p>
             </div>
             <button
@@ -117,7 +119,7 @@ export default function SalaryHeader({ salary, grandTotal, onUpdateSalary }: Sal
               <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
               </svg>
-              Set Salary
+              {t('overview.setSalary')}
             </button>
           </div>
         ) : (
@@ -134,7 +136,7 @@ export default function SalaryHeader({ salary, grandTotal, onUpdateSalary }: Sal
                       ? 'text-green-700' 
                       : 'text-red-600'
                   }`}>
-                    {remainingFromSalary >= 0 ? 'Left: ' : 'Over: '}
+                    {remainingFromSalary >= 0 ? t('overview.left') : t('overview.over')}
                     {formatCurrency(Math.abs(remainingFromSalary))}
                   </span>
                 </div>
@@ -172,7 +174,7 @@ export default function SalaryHeader({ salary, grandTotal, onUpdateSalary }: Sal
                 ></div>
               </div>
               <div className="text-xs text-accent-500 text-right mt-0.5">
-                {salaryPercentage.toFixed(1)}% used
+                {salaryPercentage.toFixed(1)}{t('overview.percentUsed')}
               </div>
             </div>
           </div>

@@ -205,6 +205,7 @@ model UserSettings {
   id             String   @id @default(cuid())
   userId         String   @unique
   periodStartDay Int      @default(1) // Day of month (1-31)
+  language       String   @default("es") // Language code: "es" for Spanish, "en" for English
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 

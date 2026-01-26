@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { BucketPayment, ExpenseBucket, FixedPayment, BucketConfig } from '@/types';
 import { formatCurrency, parseCurrencyInput } from '@/lib/currency';
 import { getPreviousPeriod, formatPeriodDisplay, PeriodFormat } from '@/lib/date';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface FixedPaymentsProps {
   currentPeriod: PeriodFormat;
@@ -40,6 +41,7 @@ export default function FixedPayments({
   onUpdateBucketPayment,
   onAddBucketPayment,
 }: FixedPaymentsProps) {
+  const { t } = useTranslation();
   const bucketMap = useMemo(() => {
     const map = new Map<string, BucketConfig>();
     bucketConfigs.forEach(b => map.set(b.id, b));
@@ -126,20 +128,20 @@ export default function FixedPayments({
   return (
     <div className="card">
       <div className="mb-2">
-        <h2 className="text-xl font-bold text-accent-900">Bills (Planned)</h2>
+        <h2 className="text-xl font-bold text-accent-900">{t('overview.bills')} ({t('overview.planned')})</h2>
         <div className="h-0.5 w-12 bg-primary-400 rounded-full mt-1"></div>
       </div>
 
       {/* Recurring Fixed Payments Section */}
       <div className="mb-2">
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-semibold text-accent-700">Recurring Payments</h3>
+          <h3 className="text-sm font-semibold text-accent-700">{t('overview.recurringPayments')}</h3>
           {!isAddingFixed && (
             <button
               onClick={() => setIsAddingFixed(true)}
               className="btn-primary text-xs px-2 py-1"
             >
-              + Add
+              + {t('common.add')}
             </button>
           )}
         </div>
@@ -192,7 +194,7 @@ export default function FixedPayments({
                 onClick={handleAddFixed}
                 className="btn-success text-xs px-2 py-1"
               >
-                Save
+                {t('common.save')}
               </button>
               <button
                 onClick={() => {
@@ -203,7 +205,7 @@ export default function FixedPayments({
                 }}
                 className="btn-secondary text-xs px-2 py-1"
               >
-                Cancel
+                {t('common.cancel')}
               </button>
             </div>
           </div>
@@ -232,15 +234,15 @@ export default function FixedPayments({
         {isMounted && fixedPayments.length > 0 && (
           <div className="space-y-1.5 mb-2 pb-2 border-b border-accent-100">
             <div className="flex justify-between items-center text-xs">
-              <span className="text-accent-600 font-medium">Total planned:</span>
+              <span className="text-accent-600 font-medium">{t('overview.planned')}:</span>
               <span className="font-semibold text-accent-800">{formatCurrency(plannedRecurringTotal)}</span>
             </div>
             <div className="flex justify-between items-center text-xs">
-              <span className="text-accent-600">Paid:</span>
+              <span className="text-accent-600">{t('overview.paidBills').replace(':', '')}:</span>
               <span className="font-semibold text-green-600">{formatCurrency(paidRecurringTotal)}</span>
             </div>
             <div className="flex justify-between items-center text-xs">
-              <span className="text-accent-600">Remaining:</span>
+              <span className="text-accent-600">{t('common.remaining') || 'Remaining'}:</span>
               <span className="font-semibold text-primary-600">{formatCurrency(remainingRecurringTotal)}</span>
             </div>
           </div>
@@ -251,7 +253,7 @@ export default function FixedPayments({
       <div>
         <div className="flex items-center justify-between mb-3">
           <div>
-            <h3 className="text-sm font-semibold text-accent-700">From Previous Period</h3>
+            <h3 className="text-sm font-semibold text-accent-700">{t('overview.fromPreviousPeriod')}</h3>
             <p className="text-xs text-accent-500" suppressHydrationWarning>
               {!isMounted ? prevPeriod : formatPeriodDisplay(prevPeriod)}
             </p>
@@ -262,13 +264,13 @@ export default function FixedPayments({
           {!isMounted ? (
             <div className="text-center py-2">
               <p className="text-xs text-accent-400">
-                No payments from previous period
+                {t('overview.noPaymentsFromPreviousPeriod')}
               </p>
             </div>
           ) : bucketPayments.length === 0 ? (
             <div className="text-center py-2">
               <p className="text-xs text-accent-400">
-                No payments from previous period
+                {t('overview.noPaymentsFromPreviousPeriod')}
               </p>
             </div>
           ) : (
@@ -286,7 +288,7 @@ export default function FixedPayments({
         {isMounted && bucketPayments.length > 0 && (
           <div className="mt-3 pt-2 border-t border-accent-100">
             <div className="flex justify-between items-center text-xs">
-              <span className="text-accent-600">Unpaid from previous period:</span>
+              <span className="text-accent-600">{t('overview.unpaidFromPreviousPeriod')}</span>
               <span className="font-semibold text-primary-600">{formatCurrency(bucketTotal)}</span>
             </div>
           </div>

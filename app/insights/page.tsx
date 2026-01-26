@@ -10,8 +10,10 @@ import PieChart from '@/components/PieChart';
 import { formatCurrency } from '@/lib/currency';
 import type { SpendingByCategoryItem } from '@/lib/db-helpers';
 import { useSettings } from '@/hooks/useSettings';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export default function InsightsPage() {
+  const { t } = useTranslation();
   const { data: session } = useSession();
   const { settings } = useSettings();
   const [period, setPeriod] = useState<PeriodFormat>(() => {
@@ -76,7 +78,7 @@ export default function InsightsPage() {
             <div className="flex flex-col gap-3 mb-2 lg:flex-row lg:items-start lg:justify-between lg:gap-4 lg:mb-0">
               <div className="flex-1 min-w-0">
                 <h1 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-accent-900 mb-2">
-                  Insights
+                  {t('insights.title')}
                 </h1>
                 <div className="h-1 w-24 bg-gradient-to-r from-primary-400 to-primary-300 rounded-full"></div>
               </div>
@@ -158,9 +160,9 @@ export default function InsightsPage() {
             </div>
           ) : spendingData.length === 0 ? (
             <div className="card text-center py-12">
-              <div className="text-accent-500 mb-2">No expenses yet for this period</div>
+              <div className="text-accent-500 mb-2">{t('insights.noExpensesForPeriod')}</div>
               <div className="text-sm text-accent-400">
-                Add expenses in the Overview to see insights
+                {t('insights.addExpensesToSeeInsights')}
               </div>
             </div>
           ) : (
@@ -168,7 +170,7 @@ export default function InsightsPage() {
               {/* Pie Chart Card */}
               <div className="card">
                 <div className="mb-4">
-                  <h2 className="text-xl font-bold text-accent-900 mb-1">Spending by Category</h2>
+                  <h2 className="text-xl font-bold text-accent-900 mb-1">{t('insights.spendingByCategory')}</h2>
                   <div className="h-0.5 w-12 bg-primary-400 rounded-full"></div>
                 </div>
 
@@ -194,7 +196,7 @@ export default function InsightsPage() {
                             </span>
                           </div>
                           <div className="text-xs text-accent-500 mt-0.5">
-                            {item.percent.toFixed(1)}% of total
+                            {item.percent.toFixed(1)}% {t('insights.ofTotal')}
                           </div>
                         </div>
                       </div>
@@ -206,7 +208,7 @@ export default function InsightsPage() {
               {/* Breakdown List Card */}
               <div className="card">
                 <div className="mb-4">
-                  <h2 className="text-xl font-bold text-accent-900 mb-1">Category Breakdown</h2>
+                  <h2 className="text-xl font-bold text-accent-900 mb-1">{t('insights.categoryBreakdown')}</h2>
                   <div className="h-0.5 w-12 bg-primary-400 rounded-full"></div>
                 </div>
 
@@ -244,7 +246,7 @@ export default function InsightsPage() {
 
                 {/* Total */}
                 <div className="mt-6 pt-4 border-t border-accent-200 flex justify-between items-center">
-                  <span className="font-semibold text-accent-800">Total Spending:</span>
+                  <span className="font-semibold text-accent-800">{t('insights.totalSpending')}</span>
                   <span className="font-bold text-lg text-primary-600">{formatCurrency(totalSpending)}</span>
                 </div>
               </div>

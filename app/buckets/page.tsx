@@ -6,8 +6,10 @@ import Sidebar from '@/components/Sidebar';
 import BucketManagement from '@/components/BucketManagement';
 import BottomNav from '@/components/BottomNav';
 import { getCurrentPeriod } from '@/lib/date';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export default function BucketsPage() {
+  const { t } = useTranslation();
   const [period] = useState(() => {
     // We need to initialize with a period for the hook, but we don't actually use period data here
     return getCurrentPeriod();
@@ -32,8 +34,8 @@ export default function BucketsPage() {
         <div className="max-w-4xl mx-auto animate-fade-in">
           {/* Mobile header - sticky, matches Overview */}
           <div className="sticky top-0 z-30 bg-accent-50/95 backdrop-blur-sm border-b border-accent-200 -mx-4 px-4 pb-4 mb-4 lg:static lg:border-0 lg:bg-transparent lg:backdrop-blur-none lg:mb-6 lg:mx-0 lg:px-0 lg:pb-0 safe-area-top">
-            <h1 className="text-2xl sm:text-3xl font-bold text-accent-900 mb-1">Bucket Management</h1>
-            <p className="text-sm sm:text-base text-accent-600 mb-2">Configure your expense buckets (cash or credit cards)</p>
+            <h1 className="text-2xl sm:text-3xl font-bold text-accent-900 mb-1">{t('buckets.title')}</h1>
+            <p className="text-sm sm:text-base text-accent-600 mb-2">{t('buckets.subtitle')}</p>
             <div className="h-1 w-20 sm:w-24 bg-gradient-to-r from-primary-400 to-primary-300 rounded-full" />
           </div>
 

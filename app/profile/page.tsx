@@ -6,11 +6,18 @@ import Sidebar from '@/components/Sidebar';
 import BottomNav from '@/components/BottomNav';
 import AppearanceModal from '@/components/AppearanceModal';
 import LanguageModal from '@/components/LanguageModal';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export default function ProfilePage() {
+  const { t, language } = useTranslation();
   const { data: session, status } = useSession();
   const [isAppearanceOpen, setIsAppearanceOpen] = useState(false);
   const [isLanguageOpen, setIsLanguageOpen] = useState(false);
+  
+  const languageNames: Record<string, string> = {
+    es: 'Español',
+    en: 'English',
+  };
   
   // Get user data from session
   const name = session?.user?.name || 'User';
@@ -24,7 +31,7 @@ export default function ProfilePage() {
 
   const handleDeleteAccount = () => {
     // TODO: Implement delete account with confirmation
-    if (confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
+    if (confirm(t('profile.areYouSure'))) {
       console.log('Delete account');
     }
   };
@@ -54,7 +61,7 @@ export default function ProfilePage() {
       <main className="flex-1 lg:ml-64 min-h-screen py-4 px-4 pb-20 sm:px-6 sm:py-6 lg:py-8 lg:px-8 lg:pb-8">
         <div className="max-w-4xl mx-auto animate-fade-in">
           <div className="mb-6 animate-slide-down">
-            <h1 className="text-4xl sm:text-5xl font-bold text-accent-900 mb-2">Profile</h1>
+            <h1 className="text-4xl sm:text-5xl font-bold text-accent-900 mb-2">{t('profile.title')}</h1>
             <div className="h-1 w-24 bg-gradient-to-r from-primary-400 to-primary-300 rounded-full"></div>
           </div>
 
@@ -82,14 +89,14 @@ export default function ProfilePage() {
           {/* Account Information */}
           <div className="card mb-6">
             <div className="mb-6">
-              <h2 className="text-xl font-bold text-accent-900 mb-1">Account Information</h2>
+              <h2 className="text-xl font-bold text-accent-900 mb-1">{t('profile.accountInformation')}</h2>
               <div className="h-0.5 w-12 bg-primary-400 rounded-full"></div>
             </div>
 
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-accent-700 mb-2">
-                  Name
+                  {t('profile.name')}
                 </label>
                 <div className="px-3 py-2 border border-transparent rounded-lg text-sm text-accent-900 bg-accent-50">
                   {name}
@@ -98,10 +105,10 @@ export default function ProfilePage() {
 
               <div>
                 <label className="block text-sm font-medium text-accent-700 mb-2">
-                  Email
+                  {t('profile.email')}
                 </label>
                 <div className="px-3 py-2 border border-transparent rounded-lg text-sm text-accent-900 bg-accent-50">
-                  {email || 'Not available'}
+                  {email || t('profile.notAvailable')}
                 </div>
               </div>
             </div>
@@ -110,14 +117,14 @@ export default function ProfilePage() {
           {/* Security */}
           <div className="card mb-6">
             <div className="mb-6">
-              <h2 className="text-xl font-bold text-accent-900 mb-1">Security</h2>
+              <h2 className="text-xl font-bold text-accent-900 mb-1">{t('profile.security')}</h2>
               <div className="h-0.5 w-12 bg-primary-400 rounded-full"></div>
             </div>
 
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-accent-700 mb-2">
-                  Login Method
+                  {t('profile.loginMethod')}
                 </label>
                 <div className="px-3 py-2 border border-transparent rounded-lg text-sm text-accent-900 bg-accent-50 flex items-center gap-2">
                   <span>{loginMethod}</span>
@@ -146,14 +153,14 @@ export default function ProfilePage() {
 
               <div>
                 <label className="block text-sm font-medium text-accent-700 mb-2">
-                  Password
+                  {t('profile.password')}
                 </label>
                 <div className="flex items-center gap-3">
                   <div className="flex-1 px-3 py-2 border border-transparent rounded-lg text-sm text-accent-900 bg-accent-50">
                     ••••••••••••
                   </div>
                   <button className="btn-secondary text-sm">
-                    Change Password
+                    {t('profile.changePassword')}
                   </button>
                 </div>
               </div>
@@ -163,14 +170,14 @@ export default function ProfilePage() {
           {/* Preferences */}
           <div className="card mb-6">
             <div className="mb-6">
-              <h2 className="text-xl font-bold text-accent-900 mb-1">Preferences</h2>
+              <h2 className="text-xl font-bold text-accent-900 mb-1">{t('profile.preferences')}</h2>
               <div className="h-0.5 w-12 bg-primary-400 rounded-full"></div>
             </div>
 
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-accent-700 mb-2">
-                  Appearance
+                  {t('profile.appearance')}
                 </label>
                 <div className="flex items-center gap-3">
                   <div className="flex-1 px-3 py-2 border border-transparent rounded-lg text-sm text-accent-900 bg-accent-50">
@@ -180,24 +187,24 @@ export default function ProfilePage() {
                     onClick={() => setIsAppearanceOpen(true)}
                     className="btn-secondary text-sm"
                   >
-                    Change
+                    {t('profile.change')}
                   </button>
                 </div>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-accent-700 mb-2">
-                  Language
+                  {t('profile.language')}
                 </label>
                 <div className="flex items-center gap-3">
                   <div className="flex-1 px-3 py-2 border border-transparent rounded-lg text-sm text-accent-900 bg-accent-50">
-                    English
+                    {languageNames[language] || 'Español'}
                   </div>
                   <button
                     onClick={() => setIsLanguageOpen(true)}
                     className="btn-secondary text-sm"
                   >
-                    Change
+                    {t('profile.change')}
                   </button>
                 </div>
               </div>
@@ -207,34 +214,34 @@ export default function ProfilePage() {
           {/* Danger Zone */}
           <div className="card border-red-200">
             <div className="mb-6">
-              <h2 className="text-xl font-bold text-red-600 mb-1">Danger Zone</h2>
+              <h2 className="text-xl font-bold text-red-600 mb-1">{t('profile.dangerZone')}</h2>
               <div className="h-0.5 w-12 bg-red-400 rounded-full"></div>
             </div>
 
             <div className="space-y-4">
               <div className="flex items-center justify-between p-4 bg-red-50 rounded-lg border border-red-200">
                 <div>
-                  <div className="font-medium text-red-900 mb-1">Sign Out</div>
-                  <div className="text-sm text-red-700">Sign out of your account</div>
+                  <div className="font-medium text-red-900 mb-1">{t('profile.signOut')}</div>
+                  <div className="text-sm text-red-700">{t('profile.signOutDescription')}</div>
                 </div>
                 <button
                   onClick={() => signOut({ callbackUrl: '/login' })}
                   className="btn-secondary text-sm border-red-200 text-red-700 hover:bg-red-100"
                 >
-                  Sign Out
+                  {t('profile.signOut')}
                 </button>
               </div>
 
               <div className="flex items-center justify-between p-4 bg-red-50 rounded-lg border border-red-200">
                 <div>
-                  <div className="font-medium text-red-900 mb-1">Delete Account</div>
-                  <div className="text-sm text-red-700">Permanently delete your account and all data</div>
+                  <div className="font-medium text-red-900 mb-1">{t('profile.deleteAccount')}</div>
+                  <div className="text-sm text-red-700">{t('profile.deleteAccountDescription')}</div>
                 </div>
                 <button
                   onClick={handleDeleteAccount}
                   className="btn-danger text-sm"
                 >
-                  Delete Account
+                  {t('profile.deleteAccount')}
                 </button>
               </div>
             </div>

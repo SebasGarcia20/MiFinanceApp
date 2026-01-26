@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { SavingsGoal, SavingsContribution } from '@/types';
 import { formatCurrency, parseCurrencyInput } from '@/lib/currency';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface SavingsProps {
   goals: SavingsGoal[];
@@ -25,6 +26,7 @@ export default function Savings({
   onAddContribution,
   onDeleteContribution,
 }: SavingsProps) {
+  const { t } = useTranslation();
   const [isAddingGoal, setIsAddingGoal] = useState(false);
   const [newGoalName, setNewGoalName] = useState('');
   const [newGoalTarget, setNewGoalTarget] = useState('');
@@ -83,13 +85,13 @@ export default function Savings({
     <div>
       {isAddingGoal ? (
         <div className="card p-4 sm:p-6 mb-4 sm:mb-6">
-          <h2 className="text-lg sm:text-xl font-bold text-accent-900 mb-3 sm:mb-4">Add New Goal</h2>
+          <h2 className="text-lg sm:text-xl font-bold text-accent-900 mb-3 sm:mb-4">{t('savings.addNewGoal')}</h2>
           <div className="space-y-3">
             <div>
-              <label className="block text-xs font-medium text-accent-700 mb-1">Goal name</label>
+              <label className="block text-xs font-medium text-accent-700 mb-1">{t('savings.goalName')}</label>
               <input
                 type="text"
-                placeholder="e.g., Apto, Trip"
+                placeholder={t('savings.goalNamePlaceholder')}
                 value={newGoalName}
                 onChange={(e) => setNewGoalName(e.target.value)}
                 onKeyDown={(e) => {
@@ -100,11 +102,11 @@ export default function Savings({
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-accent-700 mb-1">Target amount</label>
+              <label className="block text-xs font-medium text-accent-700 mb-1">{t('savings.targetAmount')}</label>
               <input
                 ref={targetRef}
                 type="text"
-                placeholder="Amount"
+                placeholder={t('savings.amountPlaceholder')}
                 value={newGoalTarget}
                 onChange={(e) => setNewGoalTarget(e.target.value)}
                 onKeyDown={(e) => {
@@ -114,11 +116,11 @@ export default function Savings({
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-accent-700 mb-1">Monthly target (optional)</label>
+              <label className="block text-xs font-medium text-accent-700 mb-1">{t('savings.monthlyTarget')}</label>
               <input
                 ref={monthlyRef}
                 type="text"
-                placeholder="Amount"
+                placeholder={t('savings.amountPlaceholder')}
                 value={newGoalMonthlyTarget}
                 onChange={(e) => setNewGoalMonthlyTarget(e.target.value)}
                 onKeyDown={(e) => {
@@ -143,10 +145,10 @@ export default function Savings({
                 }}
                 className="btn-secondary flex-1 sm:flex-initial"
               >
-                Cancel
+                {t('common.cancel')}
               </button>
               <button onClick={handleAddGoal} className="btn-success flex-1 sm:flex-initial">
-                Save
+                {t('common.save')}
               </button>
             </div>
           </div>
@@ -159,18 +161,18 @@ export default function Savings({
           <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
           </svg>
-          Add New Goal
+          {t('savings.addNewGoal')}
         </button>
       )}
 
       <div className="space-y-3 sm:space-y-4">
         {!isMounted ? (
           <div className="card text-center py-10 sm:py-12 text-accent-500 text-sm sm:text-base">
-            Loading savings goals...
+            {t('savings.loadingGoals')}
           </div>
         ) : sortedGoals.length === 0 ? (
           <div className="card text-center py-10 sm:py-12 text-accent-500 text-sm sm:text-base">
-            No savings goals yet. Tap &quot;Add New Goal&quot; to get started.
+            {t('savings.noGoalsYet')}
           </div>
         ) : (
           sortedGoals.map((goal) => {
@@ -186,9 +188,9 @@ export default function Savings({
                   <div className="flex-1 min-w-0">
                     <h3 className="text-lg sm:text-xl font-bold text-accent-900 mb-1">{goal.name}</h3>
                     <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-accent-600">
-                      <span>Target: <span className="font-semibold text-accent-800">{formatCurrency(goal.targetAmount)}</span></span>
+                      <span>{t('savings.target')} <span className="font-semibold text-accent-800">{formatCurrency(goal.targetAmount)}</span></span>
                       {goal.monthlyTarget && (
-                        <span>Monthly: <span className="font-semibold text-accent-800">{formatCurrency(goal.monthlyTarget)}</span></span>
+                        <span>{t('savings.monthly')} <span className="font-semibold text-accent-800">{formatCurrency(goal.monthlyTarget)}</span></span>
                       )}
                     </div>
                   </div>
@@ -205,24 +207,24 @@ export default function Savings({
                       }}
                       className="flex-1 sm:flex-initial min-h-[44px] sm:min-h-0 px-4 py-2.5 sm:px-3 sm:py-1.5 text-sm sm:text-xs font-medium bg-primary-400 text-white rounded-lg hover:bg-primary-500 active:scale-95 transition-all duration-200"
                     >
-                      {isAdding ? 'Cancel' : '+ Add'}
+                      {isAdding ? t('common.cancel') : `+ ${t('savings.add')}`}
                     </button>
                     <button
                       onClick={() => onDeleteGoal(goal.id)}
                       className="flex-1 sm:flex-initial btn-danger text-sm sm:text-xs px-4 sm:px-3 py-2.5 sm:py-1.5 min-h-[44px] sm:min-h-0"
                     >
-                      Delete
+                      {t('common.delete')}
                     </button>
                   </div>
                 </div>
 
                 {isAdding && (
                   <div className="mb-4 p-3 sm:p-4 bg-gradient-to-br from-primary-50 to-white rounded-xl border-2 border-primary-200">
-                    <label className="block text-xs font-medium text-accent-700 mb-2">Amount to add</label>
+                    <label className="block text-xs font-medium text-accent-700 mb-2">{t('savings.amountToAdd')}</label>
                     <div className="flex flex-col sm:flex-row gap-2">
                       <input
                         type="text"
-                        placeholder="Amount"
+                        placeholder={t('savings.amountPlaceholder')}
                         value={addAmount}
                         onChange={(e) => setAddAmount(e.target.value)}
                         onKeyDown={(e) => {
@@ -239,7 +241,7 @@ export default function Savings({
                         onClick={() => handleAddSavings(goal.id)}
                         className="btn-success flex-1 sm:flex-initial min-h-[44px] sm:min-h-0"
                       >
-                        Add
+                        {t('savings.add')}
                       </button>
                     </div>
                   </div>
@@ -247,13 +249,13 @@ export default function Savings({
 
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-accent-600">Total saved:</span>
+                    <span className="text-sm text-accent-600">{t('savings.totalSaved')}</span>
                     <span className="text-base sm:text-lg font-bold text-primary-600">{formatCurrency(totalSaved)}</span>
                   </div>
 
                   <div>
                     <div className="flex justify-between items-center mb-1">
-                      <span className="text-xs text-accent-500">Progress</span>
+                      <span className="text-xs text-accent-500">{t('savings.progress')}</span>
                       <span className="text-xs font-semibold text-accent-700">{progress.toFixed(1)}%</span>
                     </div>
                     <div className="w-full bg-accent-100 rounded-full h-3 sm:h-3.5 overflow-hidden">
@@ -273,7 +275,7 @@ export default function Savings({
                   </div>
 
                   <div className="flex justify-between items-center pt-2 border-t border-accent-200">
-                    <span className="text-sm text-accent-600">Remaining:</span>
+                    <span className="text-sm text-accent-600">{t('savings.remaining')}</span>
                     <span className={`text-sm font-semibold ${remaining === 0 ? 'text-green-600' : 'text-accent-800'}`}>
                       {formatCurrency(remaining)}
                     </span>

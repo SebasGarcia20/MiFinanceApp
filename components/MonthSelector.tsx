@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface MonthSelectorProps {
   month: string;
@@ -15,10 +16,10 @@ function getCurrentMonth(): string {
   return `${year}-${String(month).padStart(2, '0')}`;
 }
 
-function formatMonthDisplay(month: string): string {
+function formatMonthDisplay(month: string, locale: string = 'en-US'): string {
   const [year, monthNum] = month.split('-').map(Number);
   const date = new Date(year, monthNum - 1, 1);
-  return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  return date.toLocaleDateString(locale, { month: 'long', year: 'numeric' });
 }
 
 function isValidMonth(month: string): boolean {
@@ -54,17 +55,26 @@ function getNextMonth(month: string): string {
   return `${nextYear}-${String(nextMonth).padStart(2, '0')}`;
 }
 
-const MONTHS = [
+const MONTHS_EN = [
   'January', 'February', 'March', 'April', 'May', 'June',
   'July', 'August', 'September', 'October', 'November', 'December'
 ];
 
+const MONTHS_ES = [
+  'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+  'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+];
+
 export default function MonthSelector({ month, onMonthChange }: MonthSelectorProps) {
+  const { t, language } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [viewYear, setViewYear] = useState(() => parseInt(month.split('-')[0]));
   const [viewMonth, setViewMonth] = useState(() => parseInt(month.split('-')[1]) - 1);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
+  
+  const MONTHS = language === 'es' ? MONTHS_ES : MONTHS_EN;
+  const locale = language === 'es' ? 'es-ES' : 'en-US';
 
   const currentMonth = getCurrentMonth();
   const isCurrentMonth = month === currentMonth;
@@ -129,7 +139,7 @@ export default function MonthSelector({ month, onMonthChange }: MonthSelectorPro
           <button
             onClick={goToPreviousMonth}
             className="p-2 rounded-lg bg-accent-100 hover:bg-primary-100 text-accent-700 hover:text-primary-700 transition-all duration-200 active:scale-95"
-            title="Previous month"
+            title={t('monthSelector.previousMonth')}
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -138,7 +148,7 @@ export default function MonthSelector({ month, onMonthChange }: MonthSelectorPro
 
           <div className="flex flex-col items-center min-w-[140px]">
             <div className="text-lg font-bold text-accent-900">
-              {formatMonthDisplay(month)}
+              {formatMonthDisplay(month, locale)}
             </div>
             <div className="text-xs text-accent-500 font-medium">
               {month}
@@ -148,7 +158,7 @@ export default function MonthSelector({ month, onMonthChange }: MonthSelectorPro
           <button
             onClick={goToNextMonth}
             className="p-2 rounded-lg bg-accent-100 hover:bg-primary-100 text-accent-700 hover:text-primary-700 transition-all duration-200 active:scale-95"
-            title="Next month"
+            title={t('monthSelector.nextMonth')}
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -158,7 +168,7 @@ export default function MonthSelector({ month, onMonthChange }: MonthSelectorPro
           {isCurrentMonth && (
             <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-primary-50 border border-primary-200">
               <div className="w-1.5 h-1.5 rounded-full bg-primary-400 animate-pulse"></div>
-              <span className="text-xs font-medium text-primary-700">Current</span>
+              <span className="text-xs font-medium text-primary-700">{t('monthSelector.current')}</span>
             </div>
           )}
         </div>
@@ -170,12 +180,12 @@ export default function MonthSelector({ month, onMonthChange }: MonthSelectorPro
               ref={buttonRef}
               onClick={() => setIsOpen(!isOpen)}
               className="flex items-center gap-2 px-3 py-2 rounded-lg bg-primary-50 hover:bg-primary-100 text-primary-700 transition-all duration-200 active:scale-95 border border-primary-200"
-              title="Select month"
+              title={t('monthSelector.selectMonth')}
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
-              <span className="text-sm font-medium">Select Month</span>
+              <span className="text-sm font-medium">{t('monthSelector.selectMonth')}</span>
             </button>
 
             {/* Custom Calendar Dropdown */}
@@ -242,7 +252,7 @@ export default function MonthSelector({ month, onMonthChange }: MonthSelectorPro
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                     </svg>
-                    Go to Current Month
+                    {t('monthSelector.goToCurrentMonth')}
                   </button>
                 </div>
               </div>
@@ -253,7 +263,7 @@ export default function MonthSelector({ month, onMonthChange }: MonthSelectorPro
             <button
               onClick={goToCurrentMonth}
               className="p-2 rounded-lg bg-primary-100 hover:bg-primary-200 text-primary-700 transition-all duration-200 active:scale-95"
-              title="Go to current month"
+              title={t('monthSelector.goToCurrentMonthTitle')}
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />

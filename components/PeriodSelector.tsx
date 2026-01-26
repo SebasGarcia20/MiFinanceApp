@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { getCurrentPeriod, formatPeriodDisplay, isValidPeriod, getPreviousPeriod, getNextPeriod, PeriodFormat } from '@/lib/date';
 import { useSettings } from '@/hooks/useSettings';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface PeriodSelectorProps {
   period: PeriodFormat;
@@ -11,6 +12,7 @@ interface PeriodSelectorProps {
 }
 
 export default function PeriodSelector({ period, onPeriodChange, variant = 'card' }: PeriodSelectorProps) {
+  const { t } = useTranslation();
   const { settings } = useSettings();
   const [isMounted, setIsMounted] = useState(false);
   const [currentPeriod, setCurrentPeriod] = useState<PeriodFormat>(period);
@@ -43,7 +45,7 @@ export default function PeriodSelector({ period, onPeriodChange, variant = 'card
         <button
           onClick={goToPreviousPeriod}
           className="p-1.5 rounded-lg hover:bg-accent-100 text-accent-600 hover:text-accent-900 transition-all duration-150 active:scale-[0.98]"
-          title="Previous period"
+          title={t('periodSelector.previousPeriod')}
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -57,7 +59,7 @@ export default function PeriodSelector({ period, onPeriodChange, variant = 'card
           {isMounted && isCurrentPeriod && (
             <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-green-50 border border-green-200">
               <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
-              <span className="text-xs font-medium text-green-700">Current</span>
+              <span className="text-xs font-medium text-green-700">{t('periodSelector.current')}</span>
             </div>
           )}
         </div>
@@ -65,7 +67,7 @@ export default function PeriodSelector({ period, onPeriodChange, variant = 'card
         <button
           onClick={goToNextPeriod}
           className="p-1.5 rounded-lg hover:bg-accent-100 text-accent-600 hover:text-accent-900 transition-all duration-150 active:scale-[0.98]"
-          title="Next period"
+          title={t('periodSelector.nextPeriod')}
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -76,7 +78,7 @@ export default function PeriodSelector({ period, onPeriodChange, variant = 'card
           <button
             onClick={goToCurrentPeriod}
             className="p-1.5 rounded-lg hover:bg-primary-100 text-primary-600 hover:text-primary-700 transition-all duration-150 active:scale-[0.98]"
-            title="Go to current period"
+            title={t('periodSelector.goToCurrentPeriod')}
           >
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
@@ -95,7 +97,7 @@ export default function PeriodSelector({ period, onPeriodChange, variant = 'card
           <button
             onClick={goToPreviousPeriod}
             className="p-2 rounded-lg bg-accent-100 hover:bg-primary-100 text-accent-700 hover:text-primary-700 transition-all duration-200 active:scale-95"
-            title="Previous period"
+            title={t('periodSelector.previousPeriod')}
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -116,7 +118,7 @@ export default function PeriodSelector({ period, onPeriodChange, variant = 'card
           <button
             onClick={goToNextPeriod}
             className="p-2 rounded-lg bg-accent-100 hover:bg-primary-100 text-accent-700 hover:text-primary-700 transition-all duration-200 active:scale-95"
-            title="Next period"
+            title={t('periodSelector.nextPeriod')}
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -126,7 +128,7 @@ export default function PeriodSelector({ period, onPeriodChange, variant = 'card
           {isMounted && isCurrentPeriod && (
             <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-primary-50 border border-primary-200">
               <div className="w-1.5 h-1.5 rounded-full bg-primary-400 animate-pulse"></div>
-              <span className="text-xs font-medium text-primary-700">Current</span>
+              <span className="text-xs font-medium text-primary-700">{t('periodSelector.current')}</span>
             </div>
           )}
         </div>
@@ -137,7 +139,7 @@ export default function PeriodSelector({ period, onPeriodChange, variant = 'card
             <button
               onClick={goToCurrentPeriod}
               className="p-2 rounded-lg bg-primary-100 hover:bg-primary-200 text-primary-700 transition-all duration-200 active:scale-95"
-              title="Go to current period"
+              title={t('periodSelector.goToCurrentPeriod')}
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />

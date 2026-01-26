@@ -5,9 +5,11 @@ import { useSession } from 'next-auth/react';
 import Sidebar from '@/components/Sidebar';
 import BottomNav from '@/components/BottomNav';
 import { loadSettings, updateSettings, AppSettings } from '@/lib/settings';
+import { useTranslation } from '@/hooks/useTranslation';
 import type { Category } from '@/types';
 
 export default function SettingsPage() {
+  const { t } = useTranslation();
   const { data: session } = useSession();
   const [isMounted, setIsMounted] = useState(false);
   const [settings, setSettings] = useState<AppSettings>(() => {
@@ -87,7 +89,7 @@ export default function SettingsPage() {
   const handleSave = async () => {
     const day = parseInt(periodStartDay, 10);
     if (day < 1 || day > 31) {
-      setSaveMessage('Period start day must be between 1 and 31');
+      setSaveMessage(t('settings.periodStartDayValidation') || 'Period start day must be between 1 and 31');
       return;
     }
 
@@ -105,10 +107,10 @@ export default function SettingsPage() {
 
       const updated = await response.json();
       setSettings({ periodStartDay: updated.periodStartDay });
-      setSaveMessage('Settings saved successfully!');
+      setSaveMessage(t('settings.settingsSaved'));
     } catch (error) {
       console.error('Error saving settings:', error);
-      setSaveMessage('Failed to save settings');
+      setSaveMessage(t('settings.failedToSave'));
     } finally {
       setIsSaving(false);
       setTimeout(() => {
@@ -132,10 +134,10 @@ export default function SettingsPage() {
 
       const updated = await response.json();
       setSettings({ periodStartDay: updated.periodStartDay });
-      setSaveMessage('Settings reset to default');
+      setSaveMessage(t('settings.settingsReset'));
     } catch (error) {
       console.error('Error resetting settings:', error);
-      setSaveMessage('Failed to reset settings');
+      setSaveMessage(t('settings.failedToSave'));
     } finally {
       setTimeout(() => {
         setSaveMessage(null);
@@ -165,11 +167,11 @@ export default function SettingsPage() {
         setIsAddingCategory(false);
       } else {
         const error = await response.json();
-        alert(error.error || 'Failed to create category');
+        alert(error.error || t('messages.error'));
       }
     } catch (error) {
       console.error('Error adding category:', error);
-      alert('Failed to create category');
+      alert(t('messages.error'));
     }
   };
 
@@ -194,16 +196,16 @@ export default function SettingsPage() {
         setEditCategoryColor('');
       } else {
         const error = await response.json();
-        alert(error.error || 'Failed to update category');
+        alert(error.error || t('messages.error'));
       }
     } catch (error) {
       console.error('Error updating category:', error);
-      alert('Failed to update category');
+      alert(t('messages.error'));
     }
   };
 
   const handleDeleteCategory = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this category? This action cannot be undone if the category has expenses.')) {
+    if (!confirm(t('settings.deleteCategoryConfirm') || 'Are you sure you want to delete this category? This action cannot be undone if the category has expenses.')) {
       return;
     }
 
@@ -216,11 +218,11 @@ export default function SettingsPage() {
         setCategories(categories.filter(c => c.id !== id));
       } else {
         const error = await response.json();
-        alert(error.error || 'Failed to delete category');
+        alert(error.error || t('messages.error'));
       }
     } catch (error) {
       console.error('Error deleting category:', error);
-      alert('Failed to delete category');
+      alert(t('messages.error'));
     }
   };
 
@@ -257,24 +259,23 @@ export default function SettingsPage() {
           ) : (
             <>
               <div className="mb-8">
-                <h1 className="text-3xl font-bold text-accent-900 mb-2">Settings</h1>
-                <p className="text-accent-600">Configure your finance tracking preferences</p>
+                <h1 className="text-3xl font-bold text-accent-900 mb-2">{t('settings.title')}</h1>
+                <p className="text-accent-600">{t('settings.subtitle')}</p>
                 <div className="h-1 w-24 bg-gradient-to-r from-primary-400 to-primary-300 rounded-full mt-3"></div>
               </div>
 
           <div className="card mb-6">
             <div className="mb-6">
-              <h2 className="text-xl font-bold text-accent-900 mb-1">Period Configuration</h2>
+              <h2 className="text-xl font-bold text-accent-900 mb-1">{t('settings.periodConfiguration')}</h2>
               <p className="text-sm text-accent-600">
-                Set the day when your financial period starts. For example, if you get paid on the 15th,
-                set this to 15 to track from the 15th of one month to the 14th of the next.
+                {t('settings.periodStartDayDescription')}
               </p>
             </div>
 
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-accent-700 mb-2">
-                  Period Start Day
+                  {t('settings.periodStartDay')}
                 </label>
                 <div className="flex items-center gap-4">
                   <input
@@ -289,12 +290,12 @@ export default function SettingsPage() {
                     className="input-field w-32"
                   />
                   <span className="text-sm text-accent-600">
-                    (Day of month: 1-31)
+                    {t('settings.dayOfMonth')}
                   </span>
                 </div>
                 {isMounted && (
                   <p className="text-xs text-accent-500 mt-2">
-                    Current setting: Your periods run from day {settings.periodStartDay} to day {settings.periodStartDay - 1} of the next month
+                    {t('settings.currentSetting')} {t('settings.yourPeriodsRun')} {settings.periodStartDay} {t('settings.toDay')} {settings.periodStartDay - 1} {t('settings.ofNextMonth')}
                   </p>
                 )}
               </div>
@@ -317,13 +318,13 @@ export default function SettingsPage() {
                   disabled={isSaving}
                   className="btn-primary px-6 py-2"
                 >
-                  {isSaving ? 'Saving...' : 'Save Settings'}
+                  {isSaving ? t('common.saving') : t('settings.saveSettings')}
                 </button>
                 <button
                   onClick={handleReset}
                   className="btn-secondary px-6 py-2"
                 >
-                  Reset to Default (Day 1)
+                  {t('settings.resetToDefault')}
                 </button>
               </div>
             </div>
@@ -332,9 +333,9 @@ export default function SettingsPage() {
           {/* Category Management */}
           <div className="card mb-6">
             <div className="mb-6">
-              <h2 className="text-xl font-bold text-accent-900 mb-1">Expense Categories</h2>
+              <h2 className="text-xl font-bold text-accent-900 mb-1">{t('settings.expenseCategories')}</h2>
               <p className="text-sm text-accent-600">
-                Manage your expense categories. Add custom categories or use the default ones.
+                {t('settings.manageCategories')}
               </p>
             </div>
 
@@ -357,7 +358,7 @@ export default function SettingsPage() {
                         value={newCategoryColor}
                         onChange={(e) => setNewCategoryColor(e.target.value)}
                         className="w-12 h-12 rounded-lg border-2 border-accent-200 cursor-pointer flex-shrink-0"
-                        title="Category color"
+                        title={t('settings.categoryColor') || 'Category color'}
                       />
                       <input
                         type="text"
@@ -370,7 +371,7 @@ export default function SettingsPage() {
                             setNewCategoryName('');
                           }
                         }}
-                        placeholder="Category name"
+                        placeholder={t('settings.categoryName')}
                         className="input-field flex-1 text-sm"
                         autoFocus
                       />
@@ -378,7 +379,7 @@ export default function SettingsPage() {
                         onClick={handleAddCategory}
                         className="btn-success text-sm px-4 py-2 flex-shrink-0"
                       >
-                        Add
+                        {t('common.add')}
                       </button>
                       <button
                         onClick={() => {
@@ -387,7 +388,7 @@ export default function SettingsPage() {
                         }}
                         className="btn-secondary text-sm px-3 py-2 flex-shrink-0"
                       >
-                        Cancel
+                        {t('common.cancel')}
                       </button>
                     </div>
                   </div>
@@ -399,16 +400,16 @@ export default function SettingsPage() {
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                     </svg>
-                    Add Custom Category
+                    {t('settings.addCustomCategory')}
                   </button>
                 )}
 
                 {/* All Categories - Combined view */}
                 <div>
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-base font-bold text-accent-900">All Categories</h3>
+                    <h3 className="text-base font-bold text-accent-900">{t('settings.allCategories')}</h3>
                     <span className="text-xs text-accent-500">
-                      {categories.length} total
+                      {categories.length} {t('common.total')?.toLowerCase() || 'total'}
                     </span>
                   </div>
                   
@@ -428,7 +429,7 @@ export default function SettingsPage() {
                         </span>
                         <div className="flex items-center gap-2">
                           <span className="px-2 py-0.5 text-xs font-medium text-accent-600 bg-accent-100 rounded-md">
-                            Default
+                            {t('settings.default')}
                           </span>
                           <svg className="w-4 h-4 text-accent-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
@@ -466,13 +467,13 @@ export default function SettingsPage() {
                               onClick={() => handleUpdateCategory(category.id)}
                               className="btn-success text-sm px-3 py-2 flex-shrink-0"
                             >
-                              Save
+                              {t('common.save')}
                             </button>
                             <button
                               onClick={cancelEditing}
                               className="btn-secondary text-sm px-3 py-2 flex-shrink-0"
                             >
-                              Cancel
+                              {t('common.cancel')}
                             </button>
                           </>
                         ) : (
@@ -488,7 +489,7 @@ export default function SettingsPage() {
                               <button
                                 onClick={() => startEditing(category)}
                                 className="px-2.5 py-1.5 text-xs font-medium bg-primary-400 text-white rounded-lg hover:bg-primary-500 active:scale-95 transition-all"
-                                title="Edit category"
+                                title={t('common.edit')}
                               >
                                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -497,7 +498,7 @@ export default function SettingsPage() {
                               <button
                                 onClick={() => handleDeleteCategory(category.id)}
                                 className="px-2.5 py-1.5 text-xs font-medium bg-red-500 text-white rounded-lg hover:bg-red-600 active:scale-95 transition-all"
-                                title="Delete category"
+                                title={t('common.delete')}
                               >
                                 <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -511,7 +512,7 @@ export default function SettingsPage() {
 
                     {categories.length === 0 && (
                       <div className="text-center py-8 text-accent-400 text-sm">
-                        No categories found. Add your first category above.
+                        {t('settings.noCategoriesFound')}
                       </div>
                     )}
                   </div>
@@ -522,31 +523,24 @@ export default function SettingsPage() {
 
           <div className="card">
             <div className="mb-4">
-              <h2 className="text-xl font-bold text-accent-900 mb-1">About Periods</h2>
+              <h2 className="text-xl font-bold text-accent-900 mb-1">{t('settings.aboutPeriods')}</h2>
             </div>
             <div className="space-y-3 text-sm text-accent-700">
               <p>
-                <strong className="text-accent-900">Why custom periods?</strong>
+                <strong className="text-accent-900">{t('settings.whyCustomPeriods')}</strong>
               </p>
               <p>
-                Many people get paid on a specific day each month (like the 15th). Using custom periods
-                allows you to track your finances from payday to payday, which often makes more sense
-                than calendar months.
+                {t('settings.whyCustomPeriodsDescription')}
               </p>
               <div className="pt-3 border-t border-accent-200">
-                <p className="font-medium text-accent-900 mb-2">Example:</p>
-                <ul className="list-disc list-inside space-y-1 text-accent-600">
-                  <li>If you set period start day to <strong>15</strong>, your periods will be:</li>
-                  <li>Jan 15 - Feb 14, 2026</li>
-                  <li>Feb 15 - Mar 14, 2026</li>
-                  <li>Mar 15 - Apr 14, 2026</li>
-                  <li>And so on...</li>
-                </ul>
+                <p className="font-medium text-accent-900 mb-2">{t('settings.example')}</p>
+                <div className="text-accent-600 whitespace-pre-line">
+                  {t('settings.periodExample')}
+                </div>
               </div>
               <div className="pt-3 border-t border-accent-200">
                 <p className="text-xs text-accent-500">
-                  <strong>Note:</strong> Changing the period start day will affect how your data is organized.
-                  Existing data will be migrated automatically to the new period structure.
+                  <strong>{t('settings.note')}</strong> {t('settings.periodNote')}
                 </p>
               </div>
             </div>

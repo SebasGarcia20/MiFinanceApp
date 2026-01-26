@@ -3,11 +3,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { BucketConfig, BucketType } from '@/types';
 import { useIsTouchDevice } from '@/hooks/useIsTouchDevice';
-
-const BUCKET_TYPE_OPTIONS: { value: BucketType; label: string }[] = [
-  { value: 'cash', label: 'Cash' },
-  { value: 'credit_card', label: 'Credit Card' },
-];
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface BucketTypeSelectProps {
   value: BucketType;
@@ -17,8 +13,14 @@ interface BucketTypeSelectProps {
 }
 
 function BucketTypeSelect({ value, onChange, id, className = '' }: BucketTypeSelectProps) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const BUCKET_TYPE_OPTIONS: { value: BucketType; label: string }[] = [
+    { value: 'cash', label: t('buckets.cash') },
+    { value: 'credit_card', label: t('buckets.creditCard') },
+  ];
 
   useEffect(() => {
     if (!open) return;
@@ -54,7 +56,7 @@ function BucketTypeSelect({ value, onChange, id, className = '' }: BucketTypeSel
         }}
         aria-haspopup="listbox"
         aria-expanded={open}
-        aria-label="Bucket type"
+        aria-label={t('buckets.bucketType')}
         className="input-field w-full text-left flex items-center justify-between gap-2 text-base sm:text-sm min-h-[44px] sm:min-h-0"
       >
         <span>{label}</span>
@@ -118,6 +120,7 @@ export default function BucketManagement({
   onDelete,
   onReorder,
 }: BucketManagementProps) {
+  const { t } = useTranslation();
   const [isAdding, setIsAdding] = useState(false);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const isTouch = useIsTouchDevice();
@@ -167,12 +170,12 @@ export default function BucketManagement({
     <div>
       <div className="card mb-6 p-4 sm:p-6">
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4 sm:mb-6">
-          <h2 className="text-lg sm:text-xl font-bold text-accent-900">Your Buckets</h2>
+          <h2 className="text-lg sm:text-xl font-bold text-accent-900">{t('buckets.yourBuckets')}</h2>
           <button
             onClick={() => setIsAdding(true)}
             className="btn-primary w-full sm:w-auto flex items-center justify-center px-4 py-2.5 sm:py-2 text-sm"
           >
-            + Add Bucket
+            + {t('buckets.addBucket')}
           </button>
         </div>
 
@@ -194,7 +197,7 @@ export default function BucketManagement({
         <div className="space-y-2 sm:space-y-3">
           {buckets.length === 0 ? (
             <div className="text-center py-10 sm:py-12 text-accent-500 text-sm sm:text-base">
-              No buckets configured. Add your first bucket to get started.
+              {t('buckets.addFirstBucket')}
             </div>
           ) : (
             buckets.map((bucket, index) => (
@@ -215,7 +218,7 @@ export default function BucketManagement({
                     try {
                       onDelete(bucket.id);
                     } catch (error) {
-                      alert((error as Error).message || 'Cannot delete bucket with existing expenses');
+                      alert((error as Error).message || t('buckets.cannotDeleteBucket'));
                     }
                   }}
                   orderIndex={index}
@@ -231,7 +234,7 @@ export default function BucketManagement({
 
         {buckets.length > 0 && (
           <div className="mt-4 sm:mt-6 pt-3 sm:pt-4 border-t-2 border-accent-100 text-xs text-accent-500 text-center">
-            {isTouch ? 'Use ↑ ↓ to reorder buckets' : 'Drag and drop to reorder buckets'}
+            {isTouch ? t('buckets.useArrows') : t('buckets.dragAndDrop')}
           </div>
         )}
       </div>
@@ -251,6 +254,7 @@ interface BucketRowProps {
 }
 
 function BucketRow({ bucket, onUpdate, onDelete, orderIndex = 0, totalCount = 0, onMoveUp, onMoveDown, showMoveButtons }: BucketRowProps) {
+  const { t } = useTranslation();
   const canMoveUp = orderIndex > 0;
   const canMoveDown = orderIndex < totalCount - 1;
   const [isEditing, setIsEditing] = useState(false);
@@ -280,27 +284,27 @@ function BucketRow({ bucket, onUpdate, onDelete, orderIndex = 0, totalCount = 0,
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4 mb-4">
           <div>
             <label className="block text-xs font-medium text-accent-700 mb-1">
-              Bucket Name
+              {t('buckets.bucketName')}
             </label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
               className="input-field w-full text-base sm:text-sm"
-              placeholder="e.g., Visa Card"
+              placeholder={t('buckets.bucketNamePlaceholder')}
               autoFocus
             />
           </div>
           <div>
             <label className="block text-xs font-medium text-accent-700 mb-1">
-              Type
+              {t('buckets.type')}
             </label>
             <BucketTypeSelect value={type} onChange={(v) => setType(v)} />
           </div>
           {type === 'credit_card' && (
             <div>
               <label className="block text-xs font-medium text-accent-700 mb-1">
-                Payment Day (1-31)
+                {t('buckets.paymentDayLabel')}
               </label>
               <input
                 type="number"
@@ -309,17 +313,17 @@ function BucketRow({ bucket, onUpdate, onDelete, orderIndex = 0, totalCount = 0,
                 value={paymentDay}
                 onChange={(e) => setPaymentDay(e.target.value)}
                 className="input-field w-full text-base sm:text-sm"
-                placeholder="Day"
+                placeholder={t('buckets.dayPlaceholder')}
               />
             </div>
           )}
         </div>
         <div className="flex flex-col-reverse sm:flex-row gap-2">
           <button onClick={handleCancel} className="btn-secondary text-sm px-4 py-2.5 sm:py-2 flex-1 sm:flex-initial">
-            ✕ Cancel
+            ✕ {t('common.cancel')}
           </button>
           <button onClick={handleSave} className="btn-success text-sm px-4 py-2.5 sm:py-2 flex-1 sm:flex-initial">
-            ✓ Save
+            ✓ {t('common.save')}
           </button>
         </div>
       </div>
@@ -373,11 +377,11 @@ function BucketRow({ bucket, onUpdate, onDelete, orderIndex = 0, totalCount = 0,
                 ? 'bg-green-100 text-green-700'
                 : 'bg-blue-100 text-blue-700'
             }`}>
-              {bucket.type === 'cash' ? 'Cash' : 'Credit Card'}
+              {bucket.type === 'cash' ? t('buckets.cash') : t('buckets.creditCard')}
             </span>
             {bucket.type === 'credit_card' && bucket.paymentDay && (
               <span className="text-accent-500">
-                Payment day: {bucket.paymentDay}
+                {t('buckets.paymentDayText')} {bucket.paymentDay}
               </span>
             )}
           </div>
@@ -388,13 +392,13 @@ function BucketRow({ bucket, onUpdate, onDelete, orderIndex = 0, totalCount = 0,
           onClick={() => setIsEditing(true)}
           className="flex-1 sm:flex-initial min-h-[44px] sm:min-h-0 px-4 py-2.5 sm:px-3 sm:py-1.5 text-sm sm:text-xs bg-primary-400 text-white rounded-lg hover:bg-primary-500 active:scale-95 transition-all duration-200 font-medium"
         >
-          Edit
+          {t('common.edit')}
         </button>
         <button
           onClick={onDelete}
           className="flex-1 sm:flex-initial btn-danger text-sm sm:text-xs px-4 sm:px-3 py-2.5 sm:py-1.5 min-h-[44px] sm:min-h-0"
         >
-          Delete
+          {t('common.delete')}
         </button>
       </div>
     </div>
@@ -407,6 +411,7 @@ interface BucketFormProps {
 }
 
 function BucketForm({ onSave, onCancel }: BucketFormProps) {
+  const { t } = useTranslation();
   const [name, setName] = useState('');
   const [type, setType] = useState<BucketType>('cash');
   const [paymentDay, setPaymentDay] = useState('');
@@ -427,11 +432,11 @@ function BucketForm({ onSave, onCancel }: BucketFormProps) {
 
   return (
     <div className="border-2 border-primary-300 rounded-xl p-4 sm:p-5 bg-primary-50/50">
-      <h3 className="font-semibold text-accent-900 mb-3 sm:mb-4 text-base sm:text-sm">Add New Bucket</h3>
+      <h3 className="font-semibold text-accent-900 mb-3 sm:mb-4 text-base sm:text-sm">{t('buckets.addNewBucket')}</h3>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4 mb-4">
         <div>
           <label className="block text-xs font-medium text-accent-700 mb-1">
-            Bucket Name
+            {t('buckets.bucketName')}
           </label>
           <input
             type="text"
@@ -442,20 +447,20 @@ function BucketForm({ onSave, onCancel }: BucketFormProps) {
               if (e.key === 'Escape') onCancel();
             }}
             className="input-field w-full text-base sm:text-sm"
-            placeholder="e.g., Visa Card"
+            placeholder={t('buckets.bucketNamePlaceholder')}
             autoFocus
           />
         </div>
         <div>
           <label className="block text-xs font-medium text-accent-700 mb-1">
-            Type
+            {t('buckets.type')}
           </label>
           <BucketTypeSelect value={type} onChange={(v) => setType(v)} />
         </div>
         {type === 'credit_card' && (
           <div>
             <label className="block text-xs font-medium text-accent-700 mb-1">
-              Payment Day (1-31)
+              {t('buckets.paymentDayLabel')}
             </label>
             <input
               type="number"
@@ -468,17 +473,17 @@ function BucketForm({ onSave, onCancel }: BucketFormProps) {
                 if (e.key === 'Escape') onCancel();
               }}
               className="input-field w-full text-base sm:text-sm"
-              placeholder="Day"
+              placeholder={t('buckets.dayPlaceholder')}
             />
           </div>
         )}
       </div>
       <div className="flex flex-col-reverse sm:flex-row gap-2">
         <button onClick={onCancel} className="btn-secondary text-sm px-4 py-2.5 sm:py-2 flex-1 sm:flex-initial">
-          ✕ Cancel
+          ✕ {t('common.cancel')}
         </button>
         <button onClick={handleSave} className="btn-success text-sm px-4 py-2.5 sm:py-2 flex-1 sm:flex-initial">
-          ✓ Add Bucket
+          ✓ {t('buckets.addBucket')}
         </button>
       </div>
     </div>

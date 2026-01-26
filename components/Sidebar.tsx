@@ -7,8 +7,10 @@ import { useSession, signOut } from 'next-auth/react';
 import FlowlyMark from './FlowlyMark';
 import AppearanceModal from './AppearanceModal';
 import LanguageModal from './LanguageModal';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export default function Sidebar() {
+  const { t } = useTranslation();
   const pathname = usePathname();
   const isOverview = pathname === '/';
   const isBuckets = pathname === '/buckets';
@@ -39,7 +41,7 @@ export default function Sidebar() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
             </svg>
           }
-          label="Overview"
+          label={t('nav.overview')}
           href="/"
           isActive={isOverview}
         />
@@ -49,7 +51,7 @@ export default function Sidebar() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
             </svg>
           }
-          label="Buckets"
+          label={t('nav.buckets')}
           href="/buckets"
           isActive={isBuckets}
         />
@@ -59,7 +61,7 @@ export default function Sidebar() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           }
-          label="Savings"
+          label={t('nav.savings')}
           href="/savings"
           isActive={isSavings}
         />
@@ -69,7 +71,7 @@ export default function Sidebar() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
             </svg>
           }
-          label="Insights"
+          label={t('nav.insights')}
           href="/insights"
           isActive={isInsights}
         />
@@ -80,7 +82,7 @@ export default function Sidebar() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
           }
-          label="Settings"
+          label={t('nav.settings')}
           href="/settings"
           isActive={isSettings}
         />
@@ -95,6 +97,7 @@ export default function Sidebar() {
 }
 
 function ProfileSection() {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [isAppearanceOpen, setIsAppearanceOpen] = useState(false);
   const [isLanguageOpen, setIsLanguageOpen] = useState(false);
@@ -177,7 +180,7 @@ function ProfileSection() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
               }
-              label="Profile"
+              label={t('nav.profile')}
               onClick={() => {
                 setIsOpen(false);
                 router.push('/profile');
@@ -190,7 +193,7 @@ function ProfileSection() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
                 </svg>
               }
-              label="Preferences"
+              label={t('profile.preferences')}
               onClick={() => {
                 setIsOpen(false);
                 router.push('/profile');
@@ -202,7 +205,7 @@ function ProfileSection() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                 </svg>
               }
-              label="Sign out"
+              label={t('profile.signOut')}
               onClick={() => {
                 setIsOpen(false);
                 signOut({ callbackUrl: '/login' });

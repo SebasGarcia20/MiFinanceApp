@@ -333,14 +333,16 @@ export async function getUserSettings(userId: string) {
 }
 
 export async function upsertUserSettings(userId: string, data: {
-  periodStartDay: number;
+  periodStartDay?: number;
+  language?: string;
 }) {
   return await prisma.userSettings.upsert({
     where: { userId },
     update: data,
     create: {
       userId,
-      periodStartDay: data.periodStartDay,
+      periodStartDay: data.periodStartDay ?? 1,
+      language: data.language ?? 'es',
     },
   });
 }

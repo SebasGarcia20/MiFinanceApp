@@ -16,7 +16,7 @@ export async function ensureUserDefaults(userId: string) {
   await prisma.userSettings.upsert({
     where: { userId },
     update: {},
-    create: { userId, periodStartDay: 15 },
+    create: { userId, periodStartDay: 1, language: 'es' },
   });
 
   const categoryCount = await prisma.category.count({ where: { userId } });

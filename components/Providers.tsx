@@ -2,6 +2,7 @@
 
 import { SessionProvider } from 'next-auth/react';
 import { SettingsProvider } from '@/components/SettingsProvider';
+import { LanguageProvider } from '@/components/LanguageProvider';
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
@@ -9,9 +10,11 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       refetchInterval={0}
       refetchOnWindowFocus={false}
     >
-      <SettingsProvider>
-        {children}
-      </SettingsProvider>
+      <LanguageProvider>
+        <SettingsProvider>
+          {children}
+        </SettingsProvider>
+      </LanguageProvider>
     </SessionProvider>
   );
 }

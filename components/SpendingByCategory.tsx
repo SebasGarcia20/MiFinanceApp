@@ -3,6 +3,7 @@
 import { useMemo } from 'react';
 import type { Expense, Category } from '@/types';
 import { formatCurrency } from '@/lib/currency';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface SpendingByCategoryProps {
   expenses: Expense[];
@@ -13,6 +14,7 @@ export default function SpendingByCategory({
   expenses,
   categories,
 }: SpendingByCategoryProps) {
+  const { t } = useTranslation();
   const spendingByCategory = useMemo(() => {
     const result: Record<string, { amount: number; count: number }> = {};
     
@@ -48,11 +50,11 @@ export default function SpendingByCategory({
     return (
       <div className="card">
         <div className="mb-4">
-          <h2 className="text-xl font-bold text-accent-900 mb-1">Spending by Category</h2>
+          <h2 className="text-xl font-bold text-accent-900 mb-1">{t('overview.spendingByCategory')}</h2>
           <div className="h-0.5 w-12 bg-primary-400 rounded-full"></div>
         </div>
         <div className="text-center py-8 text-accent-400 text-sm">
-          No expenses yet
+          {t('overview.noExpensesYet')}
         </div>
       </div>
     );
@@ -61,7 +63,7 @@ export default function SpendingByCategory({
   return (
     <div className="card">
       <div className="mb-4">
-        <h2 className="text-xl font-bold text-accent-900 mb-1">Spending by Category</h2>
+        <h2 className="text-xl font-bold text-accent-900 mb-1">{t('overview.spendingByCategory')}</h2>
         <div className="h-0.5 w-12 bg-primary-400 rounded-full"></div>
       </div>
 
@@ -100,7 +102,7 @@ export default function SpendingByCategory({
 
       {/* Total */}
       <div className="mt-4 pt-4 border-t border-accent-200 flex justify-between items-center">
-        <span className="font-semibold text-accent-800">Total:</span>
+        <span className="font-semibold text-accent-800">{t('common.total')}:</span>
         <span className="font-bold text-lg text-primary-600">{formatCurrency(totalSpending)}</span>
       </div>
     </div>

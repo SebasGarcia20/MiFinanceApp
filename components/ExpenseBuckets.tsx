@@ -5,6 +5,7 @@ import type { Expense, ExpenseBucket, BucketConfig, Category } from '@/types';
 import { formatCurrency } from '@/lib/currency';
 import { parseCurrencyInput } from '@/lib/currency';
 import CategorySelector from '@/components/CategorySelector';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface ExpenseBucketsProps {
   expenses: Expense[];
@@ -14,6 +15,7 @@ interface ExpenseBucketsProps {
   onAdd: (expense: Omit<Expense, 'id'>) => void;
   onUpdate: (id: string, updates: Partial<Expense>) => void;
   onDelete: (id: string) => void;
+  isLoading?: boolean;
 }
 
 export default function ExpenseBuckets({
@@ -24,7 +26,9 @@ export default function ExpenseBuckets({
   onAdd,
   onUpdate,
   onDelete,
+  isLoading = false,
 }: ExpenseBucketsProps) {
+  const { t } = useTranslation();
   const sortedBuckets = useMemo(() => {
     return [...bucketConfigs].sort((a, b) => a.order - b.order);
   }, [bucketConfigs]);
@@ -56,16 +60,77 @@ export default function ExpenseBuckets({
     return 'md:grid-cols-3';
   }, [sortedBuckets.length]);
 
+  // Show loading skeleton when loading
+  if (isLoading) {
+    return (
+      <div className="card">
+        <div className="mb-6">
+          {/* Loading progress bar */}
+          <div className="mb-4">
+            <div className="h-2 bg-accent-100 rounded-full overflow-hidden mb-4 relative">
+              <div className="h-full w-1/3 bg-gradient-to-r from-primary-400 to-primary-300 rounded-full animate-loading"></div>
+            </div>
+            <div className="h-6 bg-accent-100 rounded-lg w-48 mb-2 animate-pulse"></div>
+            <div className="h-0.5 w-12 bg-accent-100 rounded-full animate-pulse"></div>
+          </div>
+        </div>
+
+        {/* Loading skeleton for expense buckets */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="border-2 border-accent-200 rounded-xl p-4 bg-gradient-to-br from-white to-primary-50/30 animate-pulse">
+              <div className="space-y-3">
+                {/* Bucket header */}
+                <div className="flex items-center gap-1.5">
+                  <div className="w-1.5 h-1.5 rounded-full bg-accent-100"></div>
+                  <div className="h-4 bg-accent-100 rounded w-24"></div>
+                </div>
+                
+                {/* Quick add form skeleton */}
+                <div className="p-2.5 bg-accent-50 rounded-lg border border-accent-200 space-y-2.5">
+                  <div className="flex gap-2">
+                    <div className="h-10 bg-accent-100 rounded flex-1"></div>
+                    <div className="h-10 bg-accent-100 rounded w-24"></div>
+                  </div>
+                  <div className="h-9 bg-accent-100 rounded"></div>
+                  <div className="h-9 bg-accent-100 rounded"></div>
+                </div>
+                
+                {/* Expenses list skeleton */}
+                <div className="space-y-1">
+                  {[1, 2].map((j) => (
+                    <div key={j} className="px-2 py-1 bg-accent-100 rounded-lg">
+                      <div className="flex items-center justify-between">
+                        <div className="h-4 bg-accent-200 rounded w-32"></div>
+                        <div className="h-4 bg-accent-200 rounded w-16"></div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                
+                {/* Total skeleton */}
+                <div className="pt-2 border-t border-accent-100 flex justify-between">
+                  <div className="h-4 bg-accent-100 rounded w-12"></div>
+                  <div className="h-4 bg-accent-100 rounded w-20"></div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="card">
       <div className="mb-6">
-        <h2 className="text-xl font-bold text-accent-900 mb-1">Current Month Expenses</h2>
+        <h2 className="text-xl font-bold text-accent-900 mb-1">{t('overview.currentMonthExpenses')}</h2>
         <div className="h-0.5 w-12 bg-primary-400 rounded-full"></div>
       </div>
 
       {sortedBuckets.length === 0 ? (
         <div className="text-center py-8 text-accent-400">
-          No buckets configured. Go to Buckets to add your first bucket.
+          {t('buckets.noBucketsConfigured')}
         </div>
       ) : (
         <>
@@ -150,6 +215,7 @@ function ExpenseBucket({
   onUpdate,
   onDelete,
 }: ExpenseBucketProps) {
+  const { t } = useTranslation();
   const [name, setName] = useState('');
   const [amount, setAmount] = useState('');
   const [selectedCategoryId, setSelectedCategoryId] = useState(defaultCategoryId);
@@ -240,7 +306,7 @@ function ExpenseBucket({
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
-            <span>Add Expense</span>
+            <span>{t('overview.addExpense')}</span>
           </button>
         </div>
       </div>
@@ -261,14 +327,14 @@ function ExpenseBucket({
         ))}
         {expenses.length === 0 && (
           <div className="text-center py-2 text-accent-400 text-xs">
-            No expenses
+            {t('overview.noExpensesYet')}
           </div>
         )}
       </div>
 
       {/* Total */}
       <div className="pt-2 border-t border-accent-100 font-semibold text-xs flex justify-between items-center">
-        <span className="text-accent-600">Total:</span>
+        <span className="text-accent-600">{t('common.total')}:</span>
         <span className="text-primary-600">{formatCurrency(total)}</span>
       </div>
     </div>

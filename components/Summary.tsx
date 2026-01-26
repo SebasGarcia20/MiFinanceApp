@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { MonthSummary, BucketConfig } from '@/types';
 import { formatCurrency } from '@/lib/currency';
 import { parseCurrencyInput } from '@/lib/currency';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface SummaryProps {
   summary: MonthSummary;
@@ -12,6 +13,7 @@ interface SummaryProps {
 }
 
 export default function Summary({ summary, bucketConfigs, onUpdateLimit }: SummaryProps) {
+  const { t } = useTranslation();
   const bucketMap = useMemo(() => {
     const map = new Map<string, BucketConfig>();
     bucketConfigs.forEach(b => map.set(b.id, b));
@@ -59,7 +61,7 @@ export default function Summary({ summary, bucketConfigs, onUpdateLimit }: Summa
   return (
     <div className="card">
       <div className="mb-2">
-        <h2 className="text-xl font-bold text-accent-900 mb-1">Summary</h2>
+        <h2 className="text-xl font-bold text-accent-900 mb-1">{t('overview.summary')}</h2>
         <div className="h-0.5 w-12 bg-primary-400 rounded-full"></div>
       </div>
 
@@ -68,7 +70,7 @@ export default function Summary({ summary, bucketConfigs, onUpdateLimit }: Summa
         {/* Totals per bucket */}
         {isMounted && (
           <div>
-            <h3 className="font-semibold text-sm mb-2 text-accent-700">Expenses by bucket:</h3>
+            <h3 className="font-semibold text-sm mb-2 text-accent-700">{t('overview.expensesByBucket')}</h3>
             <div className="space-y-1.5">
               {expensesList.map(({ bucketId, total, bucket }) => {
                 const bucketName = bucket?.name || bucketId;
@@ -89,7 +91,7 @@ export default function Summary({ summary, bucketConfigs, onUpdateLimit }: Summa
         {/* Paid bills */}
         <div className="pt-2.5 border-t border-accent-200">
           <div className="flex justify-between text-sm items-center">
-            <span className="text-accent-600">Paid bills:</span>
+            <span className="text-accent-600">{t('overview.paidBills')}</span>
             <span className="font-semibold text-accent-800">{formatCurrency(summary.paidRecurringTotal)}</span>
           </div>
         </div>
@@ -97,7 +99,7 @@ export default function Summary({ summary, bucketConfigs, onUpdateLimit }: Summa
         {/* Grand total */}
         <div className="pt-2.5 border-t border-accent-200">
           <div className="flex justify-between font-semibold text-lg items-center">
-            <span className="text-accent-800">Total expenses:</span>
+            <span className="text-accent-800">{t('overview.totalExpenses')}</span>
             <span className="text-primary-600">{formatCurrency(summary.grandTotal)}</span>
           </div>
         </div>
@@ -106,7 +108,7 @@ export default function Summary({ summary, bucketConfigs, onUpdateLimit }: Summa
         {isMounted && summary.salary > 0 && (
           <div className="pt-2.5 border-t border-primary-300 bg-gradient-to-br from-primary-50/50 to-white rounded-lg p-1.5">
             <div className="flex justify-between items-center mb-1">
-              <span className="font-semibold text-accent-800">Money Left:</span>
+              <span className="font-semibold text-accent-800">{t('overview.moneyLeft')}</span>
               <span
                 className={`font-bold text-xl ${
                   summary.remainingFromSalary >= 0 
@@ -118,7 +120,7 @@ export default function Summary({ summary, bucketConfigs, onUpdateLimit }: Summa
               </span>
             </div>
             <div className="text-xs text-accent-500 text-right">
-              Available for savings or next period
+              {t('overview.availableForSavings')}
             </div>
           </div>
         )}

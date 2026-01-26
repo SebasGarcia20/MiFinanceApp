@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { SavingsGoal, SavingsContribution } from '@/types';
 import { formatCurrency } from '@/lib/currency';
 import Link from 'next/link';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface SavingsSuggestionsCardProps {
   goals: SavingsGoal[];
@@ -18,6 +19,7 @@ export default function SavingsSuggestionsCard({
   currentPeriod,
   onSaveNow,
 }: SavingsSuggestionsCardProps) {
+  const { t } = useTranslation();
   const [isMounted, setIsMounted] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -80,7 +82,7 @@ export default function SavingsSuggestionsCard({
             <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            Suggested savings
+            {t('overview.suggestedSavings')}
           </h2>
           <div className="h-0.5 w-12 bg-green-400 rounded-full"></div>
         </div>
@@ -89,10 +91,10 @@ export default function SavingsSuggestionsCard({
           <div className="px-3 py-2.5 bg-white/60 rounded-lg border border-green-200/50 flex items-center justify-between gap-3">
             <div className="flex-1 min-w-0">
               <p className="text-xs font-semibold text-accent-800 mb-0.5">
-                No savings goals yet
+                {t('overview.noSavingsGoalsYet')}
               </p>
               <p className="text-xs text-accent-500 leading-relaxed">
-                Add a savings goal with a monthly target
+                {t('overview.addSavingsGoalDescription')}
               </p>
             </div>
             <Link
@@ -102,7 +104,7 @@ export default function SavingsSuggestionsCard({
               <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
               </svg>
-              Add goal
+              {t('overview.addGoal')}
             </Link>
           </div>
         </div>
@@ -134,7 +136,7 @@ export default function SavingsSuggestionsCard({
             <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            Suggested savings
+            {t('overview.suggestedSavings')}
           </h2>
           <div className="h-0.5 w-12 bg-green-400 rounded-full"></div>
         </div>
@@ -148,7 +150,7 @@ export default function SavingsSuggestionsCard({
                   ? 'hover:bg-green-100 text-green-700 active:scale-95'
                   : 'text-green-300 cursor-not-allowed'
               }`}
-              title="Previous goal"
+              title={t('overview.previousGoal')}
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -165,7 +167,7 @@ export default function SavingsSuggestionsCard({
                   ? 'hover:bg-green-100 text-green-700 active:scale-95'
                   : 'text-green-300 cursor-not-allowed'
               }`}
-              title="Next goal"
+              title={t('overview.nextGoal')}
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -197,7 +199,7 @@ export default function SavingsSuggestionsCard({
                   : 'bg-green-500 text-white hover:bg-green-600 active:scale-95'
               }`}
             >
-              {currentGoalData.isComplete ? '✓ Complete' : 'Complete'}
+              {currentGoalData.isComplete ? t('overview.completeWithCheck') : t('overview.complete')}
             </button>
           </div>
         </div>
@@ -208,7 +210,7 @@ export default function SavingsSuggestionsCard({
               href="/savings"
               className="text-xs text-green-600 hover:text-green-700 font-medium flex items-center gap-1 transition-colors"
             >
-              View all goals
+              {t('overview.viewAllGoals')}
               <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
