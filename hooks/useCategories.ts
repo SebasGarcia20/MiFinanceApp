@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import { useSession } from 'next-auth/react';
 import type { Category } from '@/types';
 
-// Default categories (matches seed data)
+// Default categories (fallback if API fails)
 const DEFAULT_CATEGORIES: Category[] = [
   { id: 'default-fixed-essentials', name: 'Fixed/Essentials', color: '#3B82F6', order: 0 },
   { id: 'default-debt-card-payment', name: 'Debt/Card Payment', color: '#EF4444', order: 1 },
@@ -12,67 +13,50 @@ const DEFAULT_CATEGORIES: Category[] = [
   { id: 'default-other', name: 'Other', color: '#6B7280', order: 6 },
 ];
 
-const CATEGORIES_KEY = 'categories';
 const DEFAULT_CATEGORY_ID = 'default-other';
 
-function loadCategories(): Category[] {
-  if (typeof window === 'undefined') return DEFAULT_CATEGORIES;
-  
-  const stored = localStorage.getItem(CATEGORIES_KEY);
-  if (!stored) return DEFAULT_CATEGORIES;
-  
-  try {
-    const parsed = JSON.parse(stored) as Category[];
-    // Merge with defaults to ensure all defaults exist
-    const defaultMap = new Map(DEFAULT_CATEGORIES.map(c => [c.id, c]));
-    parsed.forEach(c => defaultMap.set(c.id, c));
-    return Array.from(defaultMap.values()).sort((a, b) => a.order - b.order);
-  } catch {
-    return DEFAULT_CATEGORIES;
-  }
-}
-
-function saveCategories(categories: Category[]): void {
-  if (typeof window === 'undefined') return;
-  localStorage.setItem(CATEGORIES_KEY, JSON.stringify(categories));
-}
-
 export function useCategories() {
-  const [categories, setCategories] = useState<Category[]>(() => loadCategories());
+  const { data: session } = useSession();
+  const [categories, setCategories] = useState<Category[]>(DEFAULT_CATEGORIES);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    setCategories(loadCategories());
-  }, []);
+    async function loadCategories() {
+      if (!session?.user?.id) {
+        setIsLoading(false);
+        return;
+      }
 
-  const addCategory = (category: Omit<Category, 'id'>) => {
-    const newCategory: Category = {
-      ...category,
-      id: `category-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-    };
-    const updated = [...categories, newCategory].sort((a, b) => a.order - b.order);
-    setCategories(updated);
-    saveCategories(updated);
-  };
+      try {
+        const response = await fetch('/api/categories');
+        if (response.ok) {
+          const data = await response.json();
+          setCategories(data);
+        } else {
+          // Fallback to defaults if API fails
+          setCategories(DEFAULT_CATEGORIES);
+        }
+      } catch (error) {
+        console.error('Error loading categories:', error);
+        // Fallback to defaults if API fails
+        setCategories(DEFAULT_CATEGORIES);
+      } finally {
+        setIsLoading(false);
+      }
+    }
 
-  const updateCategory = (id: string, updates: Partial<Category>) => {
-    const updated = categories.map(c => c.id === id ? { ...c, ...updates } : c);
-    setCategories(updated);
-    saveCategories(updated);
-  };
+    loadCategories();
+  }, [session?.user?.id]);
 
-  const deleteCategory = (id: string) => {
-    // Don't allow deleting default categories
-    if (id.startsWith('default-')) return;
-    const updated = categories.filter(c => c.id !== id);
-    setCategories(updated);
-    saveCategories(updated);
-  };
+  // Find default category ID from actual categories (prefer "Other" category)
+  const defaultCategoryId = useMemo(() => {
+    const otherCategory = categories.find(c => c.name.toLowerCase() === 'other');
+    return otherCategory?.id || (categories.length > 0 ? categories[categories.length - 1].id : DEFAULT_CATEGORY_ID);
+  }, [categories]);
 
   return {
     categories,
-    defaultCategoryId: DEFAULT_CATEGORY_ID,
-    addCategory,
-    updateCategory,
-    deleteCategory,
+    defaultCategoryId,
+    isLoading,
   };
 }

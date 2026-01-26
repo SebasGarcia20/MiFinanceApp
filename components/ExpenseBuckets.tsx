@@ -47,6 +47,15 @@ export default function ExpenseBuckets({
     return result;
   }, [expenses, sortedBuckets]);
 
+  // Calculate grid columns for desktop based on number of buckets
+  const desktopGridCols = useMemo(() => {
+    const bucketCount = sortedBuckets.length;
+    if (bucketCount === 1) return 'md:grid-cols-1';
+    if (bucketCount === 2) return 'md:grid-cols-2';
+    // 3 or more buckets
+    return 'md:grid-cols-3';
+  }, [sortedBuckets.length]);
+
   return (
     <div className="card">
       <div className="mb-6">
@@ -89,7 +98,7 @@ export default function ExpenseBuckets({
           </div>
 
           {/* Desktop: Columns, Mobile: Active tab */}
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          <div className={`grid grid-cols-1 ${desktopGridCols} gap-4`}>
             {sortedBuckets.map((bucket) => {
               const bucketExpenses = expensesByBucket[bucket.id] || [];
               return (

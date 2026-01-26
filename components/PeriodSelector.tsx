@@ -51,7 +51,7 @@ export default function PeriodSelector({ period, onPeriodChange, variant = 'card
         </button>
 
         <div className="flex items-center gap-2.5 px-1">
-          <span className="text-sm font-medium text-accent-800">
+          <span className="text-sm font-medium text-accent-800" suppressHydrationWarning>
             {!isMounted ? period : formatPeriodDisplay(period)}
           </span>
           {isMounted && isCurrentPeriod && (
@@ -103,7 +103,7 @@ export default function PeriodSelector({ period, onPeriodChange, variant = 'card
           </button>
 
           <div className="flex flex-col items-center min-w-[200px]">
-            <div className="text-lg font-bold text-accent-900">
+            <div className="text-lg font-bold text-accent-900" suppressHydrationWarning>
               {!isMounted ? period : formatPeriodDisplay(period)}
             </div>
             {isMounted && (

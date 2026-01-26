@@ -87,8 +87,70 @@ export default function InsightsPage() {
           </div>
 
           {isLoading ? (
-            <div className="card text-center py-12">
-              <div className="text-accent-500">Loading spending data...</div>
+            <div>
+              {/* Loading progress bar */}
+              <div className="mb-6">
+                <div className="h-2 bg-accent-100 rounded-full overflow-hidden mb-4 relative">
+                  <div className="h-full w-1/3 bg-gradient-to-r from-primary-400 to-primary-300 rounded-full animate-loading"></div>
+                </div>
+              </div>
+
+              {/* Loading skeleton for insights cards */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Pie Chart Card Skeleton */}
+                <div className="card">
+                  <div className="mb-4">
+                    <div className="h-6 bg-accent-100 rounded-lg w-48 mb-2 animate-pulse"></div>
+                    <div className="h-1 bg-accent-100 rounded-full w-12 animate-pulse"></div>
+                  </div>
+                  <div className="flex flex-col items-center gap-6">
+                    {/* Pie chart skeleton - circular */}
+                    <div className="w-60 h-60 rounded-full bg-accent-100 animate-pulse"></div>
+                    {/* Legend skeleton */}
+                    <div className="w-full space-y-2">
+                      {[1, 2, 3, 4].map((i) => (
+                        <div key={i} className="flex items-center gap-3 p-2 rounded-lg animate-pulse">
+                          <div className="w-4 h-4 rounded-full bg-accent-100 flex-shrink-0"></div>
+                          <div className="flex-1">
+                            <div className="h-4 bg-accent-100 rounded w-24 mb-1"></div>
+                            <div className="h-3 bg-accent-100 rounded w-16"></div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Breakdown List Card Skeleton */}
+                <div className="card">
+                  <div className="mb-4">
+                    <div className="h-6 bg-accent-100 rounded-lg w-40 mb-2 animate-pulse"></div>
+                    <div className="h-1 bg-accent-100 rounded-full w-12 animate-pulse"></div>
+                  </div>
+                  <div className="space-y-3">
+                    {[1, 2, 3, 4, 5].map((i) => (
+                      <div key={i} className="space-y-1.5 animate-pulse">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2 flex-1">
+                            <div className="w-3 h-3 rounded-full bg-accent-100"></div>
+                            <div className="h-4 bg-accent-100 rounded w-24"></div>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <div className="h-3 bg-accent-100 rounded w-12"></div>
+                            <div className="h-4 bg-accent-100 rounded w-20"></div>
+                          </div>
+                        </div>
+                        <div className="h-2 bg-accent-100 rounded-full"></div>
+                      </div>
+                    ))}
+                  </div>
+                  {/* Total skeleton */}
+                  <div className="mt-6 pt-4 border-t border-accent-200 flex justify-between items-center animate-pulse">
+                    <div className="h-4 bg-accent-100 rounded w-32"></div>
+                    <div className="h-6 bg-accent-100 rounded w-24"></div>
+                  </div>
+                </div>
+              </div>
             </div>
           ) : error ? (
             <div className="card bg-red-50 border-red-200">

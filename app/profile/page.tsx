@@ -8,7 +8,7 @@ import AppearanceModal from '@/components/AppearanceModal';
 import LanguageModal from '@/components/LanguageModal';
 
 export default function ProfilePage() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const [isAppearanceOpen, setIsAppearanceOpen] = useState(false);
   const [isLanguageOpen, setIsLanguageOpen] = useState(false);
   
@@ -28,6 +28,24 @@ export default function ProfilePage() {
       console.log('Delete account');
     }
   };
+
+  if (status === 'loading') {
+    return (
+      <div className="flex min-h-screen bg-accent-50">
+        <Sidebar />
+        <main className="flex-1 lg:ml-64 min-h-screen py-4 px-4 pb-20 sm:px-6 sm:py-6 lg:py-8 lg:px-8 lg:pb-8">
+          <div className="max-w-4xl mx-auto">
+            <div className="animate-pulse space-y-6">
+              <div className="h-12 bg-accent-100 rounded-lg w-48"></div>
+              <div className="h-32 bg-accent-100 rounded-lg"></div>
+              <div className="h-64 bg-accent-100 rounded-lg"></div>
+            </div>
+          </div>
+        </main>
+        <BottomNav />
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen bg-accent-50">

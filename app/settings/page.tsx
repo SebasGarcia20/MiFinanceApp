@@ -28,6 +28,7 @@ export default function SettingsPage() {
   // Category management state
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoadingCategories, setIsLoadingCategories] = useState(true);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [isAddingCategory, setIsAddingCategory] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [newCategoryColor, setNewCategoryColor] = useState('#6B7280');
@@ -38,12 +39,22 @@ export default function SettingsPage() {
   useEffect(() => {
     setIsMounted(true);
     
-    // Load settings from API
-    async function loadSettingsFromAPI() {
+    // Load settings and categories in parallel
+    async function loadData() {
+      if (!session?.user?.id) return;
+      
+      setIsLoadingCategories(true);
+      
       try {
-        const response = await fetch('/api/settings');
-        if (response.ok) {
-          const data = await response.json();
+        // Load both in parallel
+        const [settingsRes, categoriesRes] = await Promise.all([
+          fetch('/api/settings'),
+          fetch('/api/categories'),
+        ]);
+
+        // Handle settings
+        if (settingsRes.ok) {
+          const data = await settingsRes.json();
           setSettings({ periodStartDay: data.periodStartDay });
           setPeriodStartDay(data.periodStartDay.toString());
         } else {
@@ -52,38 +63,25 @@ export default function SettingsPage() {
           setSettings(current);
           setPeriodStartDay(current.periodStartDay.toString());
         }
+
+        // Handle categories
+        if (categoriesRes.ok) {
+          const data = await categoriesRes.json();
+          setCategories(data);
+        }
       } catch (error) {
-        console.error('Error loading settings:', error);
+        console.error('Error loading data:', error);
         // Fallback to localStorage if API fails
         const current = loadSettings();
         setSettings(current);
         setPeriodStartDay(current.periodStartDay.toString());
-      }
-    }
-
-    loadSettingsFromAPI();
-  }, []);
-
-  // Load categories
-  useEffect(() => {
-    async function loadCategories() {
-      if (!session?.user?.id) return;
-      
-      setIsLoadingCategories(true);
-      try {
-        const response = await fetch('/api/categories');
-        if (response.ok) {
-          const data = await response.json();
-          setCategories(data);
-        }
-      } catch (error) {
-        console.error('Error loading categories:', error);
       } finally {
         setIsLoadingCategories(false);
+        setIsInitialLoad(false);
       }
     }
 
-    loadCategories();
+    loadData();
   }, [session?.user?.id]);
 
   const handleSave = async () => {
@@ -249,11 +247,20 @@ export default function SettingsPage() {
       {/* Main Content */}
       <main className="flex-1 lg:ml-64 min-h-screen py-4 px-4 pb-20 sm:px-6 sm:py-6 lg:py-8 lg:px-8 lg:pb-8">
         <div className="max-w-4xl mx-auto opacity-0 animate-[fadeIn_0.3s_ease-in-out_forwards]">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-accent-900 mb-2">Settings</h1>
-            <p className="text-accent-600">Configure your finance tracking preferences</p>
-            <div className="h-1 w-24 bg-gradient-to-r from-primary-400 to-primary-300 rounded-full mt-3"></div>
-          </div>
+          {isInitialLoad ? (
+            <div className="animate-pulse space-y-6">
+              <div className="h-10 bg-accent-100 rounded-lg w-48 mb-2"></div>
+              <div className="h-4 bg-accent-100 rounded-lg w-64 mb-6"></div>
+              <div className="h-64 bg-accent-100 rounded-lg"></div>
+              <div className="h-96 bg-accent-100 rounded-lg"></div>
+            </div>
+          ) : (
+            <>
+              <div className="mb-8">
+                <h1 className="text-3xl font-bold text-accent-900 mb-2">Settings</h1>
+                <p className="text-accent-600">Configure your finance tracking preferences</p>
+                <div className="h-1 w-24 bg-gradient-to-r from-primary-400 to-primary-300 rounded-full mt-3"></div>
+              </div>
 
           <div className="card mb-6">
             <div className="mb-6">
@@ -332,7 +339,13 @@ export default function SettingsPage() {
             </div>
 
             {isLoadingCategories ? (
-              <div className="text-center py-8 text-accent-500">Loading categories...</div>
+              <div className="space-y-6">
+                <div className="animate-pulse space-y-3">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="h-12 bg-accent-100 rounded-lg"></div>
+                  ))}
+                </div>
+              </div>
             ) : (
               <div className="space-y-6">
                 {/* Add new category */}
@@ -538,6 +551,8 @@ export default function SettingsPage() {
               </div>
             </div>
           </div>
+            </>
+          )}
         </div>
       </main>
 

@@ -21,10 +21,7 @@ export const authOptions: NextAuthOptions = {
     error: '/login', // Redirect errors to login
   },
   callbacks: {
-    async signIn({ user }) {
-      if (user?.id) {
-        await ensureUserDefaults(user.id);
-      }
+    async signIn() {
       return true;
     },
     async session({ session, token, user }) {
@@ -48,6 +45,22 @@ export const authOptions: NextAuthOptions = {
         try {
           const urlObj = new URL(url, baseUrl);
           const callbackUrl = urlObj.searchParams.get('callbackUrl');
+          const error = urlObj.searchParams.get('error');
+          
+          // Convert error messages to error codes
+          if (error) {
+            let errorCode = 'AUTH_ERROR';
+            if (error.includes('Configuration')) errorCode = 'CONFIG_ERROR';
+            else if (error.includes('AccessDenied')) errorCode = 'ACCESS_DENIED';
+            else if (error.includes('Verification')) errorCode = 'VERIFICATION_ERROR';
+            
+            // Rebuild URL with error code instead of raw error text
+            const newUrl = new URL('/login', baseUrl);
+            if (callbackUrl) newUrl.searchParams.set('callbackUrl', callbackUrl);
+            newUrl.searchParams.set('error', errorCode);
+            return newUrl.toString();
+          }
+          
           if (callbackUrl) {
             // Decode the callback URL (e.g., %2F becomes /)
             const decoded = decodeURIComponent(callbackUrl);

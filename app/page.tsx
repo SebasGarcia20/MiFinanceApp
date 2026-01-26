@@ -22,24 +22,20 @@ import BottomNav from '@/components/BottomNav';
 export default function OverviewPage() {
   const { settings } = useSettings();
   const [period, setPeriod] = useState<PeriodFormat>(() => {
-    // During SSR, use a safe default that won't cause hydration mismatch
+    // Always use day 1 as initial value to ensure server and client match
     // We'll update to the actual period after mount
-    if (typeof window === 'undefined') {
-      const now = new Date();
-      const year = now.getFullYear();
-      const month = String(now.getMonth() + 1).padStart(2, '0');
-      const day = '01'; // Use day 1 as default to avoid issues
-      return `${year}-${month}-${day}` as PeriodFormat;
-    }
-    return getCurrentPeriod(settings.periodStartDay);
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = '01'; // Use day 1 as default to avoid hydration mismatch
+    return `${year}-${month}-${day}` as PeriodFormat;
   });
 
   // Update to actual current period after mount and when settings change
   useEffect(() => {
-    if (settings.periodStartDay) {
-      const currentPeriod = getCurrentPeriod(settings.periodStartDay);
-      setPeriod(currentPeriod);
-    }
+    const startDay = settings.periodStartDay || 1;
+    const currentPeriod = getCurrentPeriod(startDay);
+    setPeriod(currentPeriod);
   }, [settings.periodStartDay]);
 
   const {

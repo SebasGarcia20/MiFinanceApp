@@ -50,7 +50,15 @@ export default function FixedPayments({
   const [newAmount, setNewAmount] = useState('');
   const [newDueDate, setNewDueDate] = useState('');
   const [isMounted, setIsMounted] = useState(false);
-  const [prevPeriod, setPrevPeriod] = useState<PeriodFormat>(currentPeriod);
+  // Initialize with a consistent default to ensure server and client match initially
+  // Use the same default pattern as OverviewPage (day 1 of current month)
+  const [prevPeriod, setPrevPeriod] = useState<PeriodFormat>(() => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = '01'; // Use day 1 as default to avoid hydration mismatch
+    return `${year}-${month}-${day}` as PeriodFormat;
+  });
   
   // Track when component has mounted to avoid hydration mismatch
   useEffect(() => {
@@ -244,8 +252,8 @@ export default function FixedPayments({
         <div className="flex items-center justify-between mb-3">
           <div>
             <h3 className="text-sm font-semibold text-accent-700">From Previous Period</h3>
-            <p className="text-xs text-accent-500">
-              {!isMounted ? currentPeriod : formatPeriodDisplay(prevPeriod)}
+            <p className="text-xs text-accent-500" suppressHydrationWarning>
+              {!isMounted ? prevPeriod : formatPeriodDisplay(prevPeriod)}
             </p>
           </div>
         </div>

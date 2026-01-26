@@ -40,6 +40,7 @@ const config: Config = {
         'slide-down': 'slideDown 0.3s ease-out',
         'scale-in': 'scaleIn 0.2s ease-out',
         'bounce-subtle': 'bounceSubtle 0.5s ease-in-out',
+        'loading': 'loading 1.5s ease-in-out infinite',
       },
     keyframes: {
       fadeIn: {
@@ -65,6 +66,10 @@ const config: Config = {
         bounceSubtle: {
           '0%, 100%': { transform: 'translateY(0)' },
           '50%': { transform: 'translateY(-4px)' },
+        },
+        loading: {
+          '0%': { transform: 'translateX(-100%)' },
+          '100%': { transform: 'translateX(400%)' },
         },
       },
       transitionDuration: {
