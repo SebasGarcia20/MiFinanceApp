@@ -85,27 +85,34 @@ export function formatPeriodDisplay(period: PeriodFormat): string {
   return `${startMonth} ${startDay} - ${endMonth} ${endDay}, ${periodYear}`;
 }
 
+/** Derive period start day from period string (e.g. "2026-01-15" → 15) so 15–14 stays 15–14 when settings aren't passed. */
+function getStartDayFromPeriod(period: PeriodFormat): number | undefined {
+  const parts = period.split('-').map(Number);
+  const day = parts[2];
+  return day >= 1 && day <= 31 ? day : undefined;
+}
+
 /**
- * Get previous period
+ * Get previous period. Uses periodStartDay if provided; otherwise derives from period (e.g. "2026-01-15" → 15) so 15–14 stays 15–14.
  */
 export function getPreviousPeriod(period: PeriodFormat, periodStartDay?: number): PeriodFormat {
   const [year, month, day] = period.split('-').map(Number);
   const date = new Date(year, month - 1, day);
   date.setMonth(date.getMonth() - 1);
   
-  const startDay = periodStartDay ?? loadSettings().periodStartDay;
+  const startDay = periodStartDay ?? getStartDayFromPeriod(period) ?? loadSettings().periodStartDay;
   return formatPeriodStart(date.getFullYear(), date.getMonth() + 1, startDay);
 }
 
 /**
- * Get next period
+ * Get next period. Uses periodStartDay if provided; otherwise derives from period (e.g. "2026-01-15" → 15) so 15–14 stays 15–14.
  */
 export function getNextPeriod(period: PeriodFormat, periodStartDay?: number): PeriodFormat {
   const [year, month, day] = period.split('-').map(Number);
   const date = new Date(year, month - 1, day);
   date.setMonth(date.getMonth() + 1);
   
-  const startDay = periodStartDay ?? loadSettings().periodStartDay;
+  const startDay = periodStartDay ?? getStartDayFromPeriod(period) ?? loadSettings().periodStartDay;
   return formatPeriodStart(date.getFullYear(), date.getMonth() + 1, startDay);
 }
 

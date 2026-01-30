@@ -31,6 +31,8 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
+    // Reset to defaults when user changes so we never show the previous account's settings
+    setSettings(DEFAULT_SETTINGS);
     const ac = new AbortController();
     setIsLoading(true);
     setError(null);

@@ -65,6 +65,7 @@ export default function OverviewPage() {
   const { goals: savingsGoals, contributions: savingsContributions, addContribution } = useSavingsData();
   const { categories, defaultCategoryId, isLoading: isLoadingCategories } = useCategories();
   const [previousMonthExpenses, setPreviousMonthExpenses] = useState<Partial<Record<ExpenseBucket, number>>>({});
+  const [previousExpensesLoadedForPeriod, setPreviousExpensesLoadedForPeriod] = useState<PeriodFormat | null>(null);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
   const [initialLoad, setInitialLoad] = useState(true);
@@ -106,10 +107,17 @@ export default function OverviewPage() {
     }
   }, [isLoadingMonthData, isLoadingCategories, initialLoad]);
 
-  // Load previous month expenses
+  // Load previous month expenses (use settings.periodStartDay so previous period matches your period, e.g. 15→15).
+  // Clear first when period changes so we never sync bucket payments with stale previous-period data.
   useEffect(() => {
-    getPreviousMonthExpenses(period).then(setPreviousMonthExpenses);
-  }, [period, getPreviousMonthExpenses]);
+    setPreviousMonthExpenses({});
+    setPreviousExpensesLoadedForPeriod(null);
+    const startDay = settings.periodStartDay ?? 1;
+    getPreviousMonthExpenses(period, startDay).then((data) => {
+      setPreviousMonthExpenses(data);
+      setPreviousExpensesLoadedForPeriod(period);
+    });
+  }, [period, getPreviousMonthExpenses, settings.periodStartDay]);
 
   const handleOnboardingComplete = () => {
     localStorage.setItem('flowly-onboarding-completed', 'true');
@@ -189,10 +197,13 @@ export default function OverviewPage() {
               ) : (
                 <FixedPayments
                   currentPeriod={period}
+                  periodStartDay={settings.periodStartDay ?? 1}
                   fixedPayments={data.fixedPayments ?? []}
                   paidFixedPayments={data.paidFixedPayments ?? []}
                   bucketPayments={data.bucketPayments ?? []}
                   previousMonthExpenses={previousMonthExpenses}
+                  previousExpensesLoadedForPeriod={previousExpensesLoadedForPeriod}
+                  isMonthDataLoaded={!isLoadingMonthData}
                   bucketConfigs={bucketConfigs}
                   plannedRecurringTotal={summary.plannedRecurringTotal}
                   paidRecurringTotal={summary.paidRecurringTotal}

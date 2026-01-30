@@ -15,13 +15,19 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const bucketPayments = await prisma.bucketPayment.findMany({
+    const raw = await prisma.bucketPayment.findMany({
       where: { userId, period },
       orderBy: { createdAt: 'asc' },
     });
-
-    // Transform bucketId to bucket for client compatibility
-    const transformed = bucketPayments.map(bp => ({
+    // One row per bucket: dedupe by bucketId (keep first, don't sum) so duplicates show correct amount until cleanup runs
+    const byBucket = new Map<string, { id: string; bucketId: string; amount: number; paid: boolean; dueDate: string | null }>();
+    for (const bp of raw) {
+      const key = bp.bucketId;
+      if (!byBucket.has(key)) {
+        byBucket.set(key, { id: bp.id, bucketId: bp.bucketId, amount: bp.amount, paid: bp.paid, dueDate: bp.dueDate });
+      }
+    }
+    const transformed = Array.from(byBucket.values()).map(bp => ({
       id: bp.id,
       bucket: bp.bucketId,
       amount: bp.amount,
@@ -70,16 +76,30 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const bucketPayment = await prisma.bucketPayment.create({
-      data: {
-        userId,
-        period,
-        bucketId,
-        amount: Math.round(amount),
-        paid: paid || false,
-        dueDate: dueDate || null,
-      },
+    // One bucket payment per (userId, period, bucketId). Update if exists so we never duplicate when user navigates back/forth.
+    const existing = await prisma.bucketPayment.findFirst({
+      where: { userId, period, bucketId },
     });
+
+    const payload = {
+      amount: Math.round(amount),
+      paid: paid ?? existing?.paid ?? false,
+      dueDate: dueDate ?? existing?.dueDate ?? null,
+    };
+
+    const bucketPayment = existing
+      ? await prisma.bucketPayment.update({
+          where: { id: existing.id },
+          data: payload,
+        })
+      : await prisma.bucketPayment.create({
+          data: {
+            userId,
+            period,
+            bucketId,
+            ...payload,
+          },
+        });
 
     // Transform bucketId to bucket for client compatibility
     return NextResponse.json({
@@ -88,7 +108,7 @@ export async function POST(request: NextRequest) {
       amount: bucketPayment.amount,
       paid: bucketPayment.paid,
       dueDate: bucketPayment.dueDate || undefined,
-    }, { status: 201 });
+    }, existing ? 200 : 201);
   } catch (error: any) {
     if (error.message === 'Unauthorized') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

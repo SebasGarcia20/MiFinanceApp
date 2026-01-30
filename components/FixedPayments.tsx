@@ -8,10 +8,15 @@ import { useTranslation } from '@/hooks/useTranslation';
 
 interface FixedPaymentsProps {
   currentPeriod: PeriodFormat;
+  periodStartDay?: number; // e.g. 15 for 15th–14th periods; used so "From previous period" shows the correct range
   fixedPayments: FixedPayment[];
   paidFixedPayments: string[];
   bucketPayments: BucketPayment[];
   previousMonthExpenses: Partial<Record<ExpenseBucket, number>>;
+  /** When this equals currentPeriod, previousMonthExpenses is for the previous of current period (so safe to sync bucket payments). */
+  previousExpensesLoadedForPeriod?: PeriodFormat | null;
+  /** When false, month-data for current period is loaded so bucketPayments in state won't be overwritten after we sync. */
+  isMonthDataLoaded?: boolean;
   bucketConfigs: BucketConfig[];
   plannedRecurringTotal: number;
   paidRecurringTotal: number;
@@ -26,10 +31,13 @@ interface FixedPaymentsProps {
 
 export default function FixedPayments({
   currentPeriod,
+  periodStartDay,
   fixedPayments,
   paidFixedPayments,
   bucketPayments,
   previousMonthExpenses,
+  previousExpensesLoadedForPeriod,
+  isMonthDataLoaded = true,
   bucketConfigs,
   plannedRecurringTotal,
   paidRecurringTotal,
@@ -62,43 +70,60 @@ export default function FixedPayments({
     return `${year}-${month}-${day}` as PeriodFormat;
   });
   
-  // Track when component has mounted to avoid hydration mismatch
+  // Compute previous period using your period start day. Derive from currentPeriod (e.g. "2026-01-15" → 15) when not passed so "From previous period" always matches the period you selected (15–14, not 1–31).
+  const effectivePeriodStartDay = periodStartDay ?? (() => {
+    const [, , day] = currentPeriod.split('-').map(Number);
+    return day >= 1 && day <= 31 ? day : 1;
+  })();
   useEffect(() => {
     setIsMounted(true);
-    setPrevPeriod(getPreviousPeriod(currentPeriod));
-  }, [currentPeriod]);
+    setPrevPeriod(getPreviousPeriod(currentPeriod, effectivePeriodStartDay));
+  }, [currentPeriod, effectivePeriodStartDay]);
 
-  // Initialize bucket payments from previous month expenses if they don't exist
+  // Create or sync bucket payments only when (1) we have fresh previous-period totals and (2) month-data is loaded so we won't be overwritten
+  const canSyncBucketPayments = previousExpensesLoadedForPeriod === currentPeriod && isMonthDataLoaded;
   useEffect(() => {
-    bucketConfigs.forEach(bucketConfig => {
-      const bucketId = bucketConfig.id;
-      const amount = previousMonthExpenses[bucketId] || 0;
-      if (amount > 0) {
+    if (!canSyncBucketPayments) return;
+    let cancelled = false;
+    (async () => {
+      for (const bucketConfig of bucketConfigs) {
+        if (cancelled) return;
+        const bucketId = bucketConfig.id;
+        const amount = previousMonthExpenses[bucketId] || 0;
         const existing = bucketPayments.find(bp => bp.bucket === bucketId);
-        if (!existing) {
-          // Calculate due date for credit cards based on payment day
-          // The due date is the payment day of the current period being viewed
-          let dueDate: string | undefined;
-          if (bucketConfig.type === 'credit_card' && bucketConfig.paymentDay) {
-            const [year, month] = currentPeriod.split('-').map(Number);
-            // Use the last valid day of the month if payment day exceeds month length
-            const daysInMonth = new Date(year, month, 0).getDate();
-            const paymentDay = Math.min(bucketConfig.paymentDay, daysInMonth);
-            
-            // Format as YYYY-MM-DD
-            dueDate = `${year}-${String(month).padStart(2, '0')}-${String(paymentDay).padStart(2, '0')}`;
+        if (existing) {
+          if (existing.amount !== amount) {
+            try {
+              await onUpdateBucketPayment(existing.id, { amount });
+            } catch (err) {
+              console.error('Error updating bucket payment:', err);
+            }
           }
-          
-          onAddBucketPayment({
+          continue;
+        }
+        if (amount <= 0) continue;
+        // Calculate due date for credit cards based on payment day
+        let dueDate: string | undefined;
+        if (bucketConfig.type === 'credit_card' && bucketConfig.paymentDay) {
+          const [year, month] = currentPeriod.split('-').map(Number);
+          const daysInMonth = new Date(year, month, 0).getDate();
+          const paymentDay = Math.min(bucketConfig.paymentDay, daysInMonth);
+          dueDate = `${year}-${String(month).padStart(2, '0')}-${String(paymentDay).padStart(2, '0')}`;
+        }
+        try {
+          await onAddBucketPayment({
             bucket: bucketId,
             amount,
             paid: false,
             dueDate,
           });
+        } catch (err) {
+          console.error('Error creating bucket payment:', err);
         }
       }
-    });
-  }, [previousMonthExpenses, bucketPayments, bucketConfigs, onAddBucketPayment, currentPeriod]);
+    })();
+    return () => { cancelled = true; };
+  }, [canSyncBucketPayments, previousMonthExpenses, bucketPayments, bucketConfigs, onAddBucketPayment, onUpdateBucketPayment, currentPeriod]);
 
   const handleAddFixed = () => {
     if (!newName.trim() || !newAmount) return;
@@ -122,8 +147,10 @@ export default function FixedPayments({
     onUpdateBucketPayment(id, { paid });
   };
 
-  const bucketTotal = bucketPayments.reduce((sum, bp) => sum + (bp.paid ? 0 : bp.amount), 0);
-  const totalUnpaid = bucketPayments.filter(bp => !bp.paid).length;
+  // Only count bucket payments with amount > 0 (hide "previous period" rows when that period had no expenses, e.g. December)
+  const bucketPaymentsWithAmount = bucketPayments.filter(bp => bp.amount > 0);
+  const bucketTotal = bucketPaymentsWithAmount.reduce((sum, bp) => sum + (bp.paid ? 0 : bp.amount), 0);
+  const totalUnpaid = bucketPaymentsWithAmount.filter(bp => !bp.paid).length;
 
   return (
     <div className="card">
@@ -267,14 +294,17 @@ export default function FixedPayments({
                 {t('overview.noPaymentsFromPreviousPeriod')}
               </p>
             </div>
-          ) : bucketPayments.length === 0 ? (
-            <div className="text-center py-2">
+          ) : bucketPaymentsWithAmount.length === 0 ? (
+            <div className="text-center py-3 space-y-1">
               <p className="text-xs text-accent-400">
                 {t('overview.noPaymentsFromPreviousPeriod')}
               </p>
+              <p className="text-xs text-accent-400/80">
+                {t('overview.bucketPaymentsEmptyHint')}
+              </p>
             </div>
           ) : (
-            bucketPayments.map((payment) => (
+            bucketPaymentsWithAmount.map((payment) => (
               <BucketPaymentRow
                 key={payment.id}
                 payment={payment}
@@ -285,7 +315,7 @@ export default function FixedPayments({
           )}
         </div>
 
-        {isMounted && bucketPayments.length > 0 && (
+        {isMounted && bucketPaymentsWithAmount.length > 0 && (
           <div className="mt-3 pt-2 border-t border-accent-100">
             <div className="flex justify-between items-center text-xs">
               <span className="text-accent-600">{t('overview.unpaidFromPreviousPeriod')}</span>

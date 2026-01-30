@@ -42,6 +42,7 @@ export interface Translations {
     fromPreviousPeriod: string;
     unpaidFromPreviousPeriod: string;
     noPaymentsFromPreviousPeriod: string;
+    bucketPaymentsEmptyHint: string;
     addExpense: string;
     expense: string;
     amount: string;
@@ -107,6 +108,11 @@ export interface Translations {
       toDay: string;
       ofNextMonth: string;
       categoryColor: string;
+      dataMaintenance: string;
+      cleanupBucketPaymentsDescription: string;
+      runCleanup: string;
+      cleanupSuccess: string;
+      cleanupNoDuplicates: string;
     };
 
   // Buckets Page
@@ -306,6 +312,7 @@ const translations: Record<Language, Translations> = {
       fromPreviousPeriod: 'Del Período Anterior',
       unpaidFromPreviousPeriod: 'Sin pagar del período anterior:',
       noPaymentsFromPreviousPeriod: 'No hay pagos del período anterior',
+      bucketPaymentsEmptyHint: 'Aparecerán aquí cuando tengas gastos en el período anterior (p. ej. saldo de tarjeta).',
       addExpense: 'Agregar Gasto',
       expense: 'Gasto',
       amount: 'Monto',
@@ -369,6 +376,11 @@ const translations: Record<Language, Translations> = {
       toDay: 'al día',
       ofNextMonth: 'del mes siguiente',
       categoryColor: 'Color de la categoría',
+      dataMaintenance: 'Mantenimiento de datos',
+      cleanupBucketPaymentsDescription: 'Si ves totales incorrectos en "Del período anterior" (p. ej. 1.188.000 en vez de 198.000), es posible que haya registros duplicados. Este botón elimina los duplicados y deja un registro por bolsillo por período.',
+      runCleanup: 'Eliminar duplicados de pagos por bolsillo',
+      cleanupSuccess: 'Se eliminaron {count} registro(s) duplicado(s). Actualiza la página para ver los totales correctos.',
+      cleanupNoDuplicates: 'No se encontraron duplicados.',
     },
     buckets: {
       title: 'Gestión de Bolsillos',
@@ -546,6 +558,7 @@ const translations: Record<Language, Translations> = {
       fromPreviousPeriod: 'From Previous Period',
       unpaidFromPreviousPeriod: 'Unpaid from previous period:',
       noPaymentsFromPreviousPeriod: 'No payments from previous period',
+      bucketPaymentsEmptyHint: 'They will appear here when you have expenses in the previous period (e.g. credit card balance).',
       addExpense: 'Add Expense',
       expense: 'Expense',
       amount: 'Amount',
@@ -609,6 +622,11 @@ const translations: Record<Language, Translations> = {
       toDay: 'to day',
       ofNextMonth: 'of the next month',
       categoryColor: 'Category color',
+      dataMaintenance: 'Data maintenance',
+      cleanupBucketPaymentsDescription: 'If you see wrong totals in "From previous period" (e.g. 1,188,000 instead of 198,000), there may be duplicate records. This button removes duplicates and keeps one record per bucket per period.',
+      runCleanup: 'Remove duplicate bucket payments',
+      cleanupSuccess: 'Removed {count} duplicate record(s). Refresh the page to see correct totals.',
+      cleanupNoDuplicates: 'No duplicates found.',
     },
     buckets: {
       title: 'Bucket Management',

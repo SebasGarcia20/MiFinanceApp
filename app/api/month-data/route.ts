@@ -23,11 +23,19 @@ export async function GET(request: NextRequest) {
     // Get expenses for this period
     const expenses = await getUserExpenses(userId, period);
     
-    // Get bucket payments (from BucketPayment model)
-    const bucketPayments = await prisma.bucketPayment.findMany({
+    // Get bucket payments. One row per bucket: dedupe by bucketId (keep first, don't sum) so duplicates from old bug show correct amount until cleanup runs.
+    const bucketPaymentsRaw = await prisma.bucketPayment.findMany({
       where: { userId, period },
       orderBy: { createdAt: 'asc' },
     });
+    const byBucket = new Map<string, { id: string; bucketId: string; amount: number; paid: boolean; dueDate: string | null }>();
+    for (const bp of bucketPaymentsRaw) {
+      const key = bp.bucketId;
+      if (!byBucket.has(key)) {
+        byBucket.set(key, { id: bp.id, bucketId: bp.bucketId, amount: bp.amount, paid: bp.paid, dueDate: bp.dueDate });
+      }
+    }
+    const bucketPayments = Array.from(byBucket.values());
 
     // Transform data to match client-side MonthData format
     const transformedExpenses = expenses.map(expense => ({
@@ -40,7 +48,7 @@ export async function GET(request: NextRequest) {
 
     const transformedBucketPayments = bucketPayments.map(bp => ({
       id: bp.id,
-      bucket: bp.bucketId, // Map bucketId to bucket
+      bucket: bp.bucketId,
       amount: bp.amount,
       paid: bp.paid,
       dueDate: bp.dueDate || undefined,

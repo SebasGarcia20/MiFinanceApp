@@ -37,6 +37,8 @@ export default function SettingsPage() {
   const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
   const [editCategoryName, setEditCategoryName] = useState('');
   const [editCategoryColor, setEditCategoryColor] = useState('');
+  const [isCleaningUp, setIsCleaningUp] = useState(false);
+  const [cleanupMessage, setCleanupMessage] = useState<string | null>(null);
 
   useEffect(() => {
     setIsMounted(true);
@@ -328,6 +330,48 @@ export default function SettingsPage() {
                 </button>
               </div>
             </div>
+          </div>
+
+          {/* Data maintenance: remove duplicate bucket payments */}
+          <div className="card mb-6">
+            <div className="mb-4">
+              <h2 className="text-xl font-bold text-accent-900 mb-1">{t('settings.dataMaintenance')}</h2>
+              <p className="text-sm text-accent-600">
+                {t('settings.cleanupBucketPaymentsDescription')}
+              </p>
+            </div>
+            {cleanupMessage && (
+              <div className="mb-4 p-3 rounded-lg text-sm bg-green-100 text-green-700">
+                {cleanupMessage}
+              </div>
+            )}
+            <button
+              type="button"
+              onClick={async () => {
+                setIsCleaningUp(true);
+                setCleanupMessage(null);
+                try {
+                  const res = await fetch('/api/bucket-payments/cleanup', { method: 'POST' });
+                  const data = await res.json().catch(() => ({}));
+                  if (res.ok && data.ok) {
+                    const msg = data.removed > 0
+                      ? t('settings.cleanupSuccess').replace('{count}', String(data.removed))
+                      : t('settings.cleanupNoDuplicates');
+                    setCleanupMessage(msg);
+                  } else {
+                    setCleanupMessage(data.message || data.error || 'Cleanup failed');
+                  }
+                } catch (e) {
+                  setCleanupMessage('Cleanup failed');
+                } finally {
+                  setIsCleaningUp(false);
+                }
+              }}
+              disabled={isCleaningUp}
+              className="btn-secondary px-6 py-2 disabled:opacity-50"
+            >
+              {isCleaningUp ? t('common.saving') : t('settings.runCleanup')}
+            </button>
           </div>
 
           {/* Category Management */}

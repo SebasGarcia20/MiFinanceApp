@@ -336,15 +336,48 @@ export async function upsertUserSettings(userId: string, data: {
   periodStartDay?: number;
   language?: string;
 }) {
-  return await prisma.userSettings.upsert({
-    where: { userId },
-    update: data,
-    create: {
-      userId,
-      periodStartDay: data.periodStartDay ?? 1,
-      language: data.language ?? 'es',
-    },
-  });
+  try {
+    return await prisma.userSettings.upsert({
+      where: { userId },
+      update: data,
+      create: {
+        userId,
+        periodStartDay: data.periodStartDay ?? 1,
+        language: data.language ?? 'es',
+      },
+    });
+  } catch (err: unknown) {
+    const code = (err as { code?: string })?.code;
+    const message = (err as { message?: string })?.message ?? '';
+    const isMissingLanguageColumn =
+      code === 'P2022' ||
+      /column.*does not exist/i.test(message) ||
+      /language/i.test(message);
+
+    if (!isMissingLanguageColumn) throw err;
+
+    // Fallback when DB has no `language` column (migration not applied)
+    const periodStartDay = data.periodStartDay ?? 1;
+    const existing = await prisma.$queryRaw<Array<{ periodStartDay: number }>>`
+      SELECT "periodStartDay" FROM "UserSettings" WHERE "userId" = ${userId} LIMIT 1
+    `;
+
+    if (existing.length > 0) {
+      await prisma.$executeRaw`
+        UPDATE "UserSettings"
+        SET "periodStartDay" = ${periodStartDay}, "updatedAt" = now()
+        WHERE "userId" = ${userId}
+      `;
+    } else {
+      const { randomUUID } = await import('crypto');
+      await prisma.$executeRaw`
+        INSERT INTO "UserSettings" ("id", "userId", "periodStartDay", "createdAt", "updatedAt")
+        VALUES (${randomUUID()}, ${userId}, ${periodStartDay}, now(), now())
+      `;
+    }
+
+    return { userId, periodStartDay } as Awaited<ReturnType<typeof prisma.userSettings.upsert>>;
+  }
 }
 
 // Categories

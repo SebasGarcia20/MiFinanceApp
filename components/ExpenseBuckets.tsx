@@ -219,13 +219,16 @@ function ExpenseBucket({
   const [name, setName] = useState('');
   const [amount, setAmount] = useState('');
   const [selectedCategoryId, setSelectedCategoryId] = useState(defaultCategoryId);
+  const [isAdding, setIsAdding] = useState(false);
 
   const handleAdd = async () => {
     if (!name.trim() || !amount) return;
+    if (isAdding) return; // Prevent double/triple submit (click or Enter)
 
     const amountNum = parseCurrencyInput(amount);
     if (amountNum === 0) return;
 
+    setIsAdding(true);
     try {
       await onAdd({
         name: name.trim(),
@@ -235,13 +238,14 @@ function ExpenseBucket({
       });
       setAmount('');
       setName('');
-      // Keep the same category selected for quick entry
       setTimeout(() => {
         const nameInput = document.querySelector(`#bucket-${bucket}-name`) as HTMLInputElement;
         nameInput?.focus();
       }, 0);
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Failed to create expense');
+    } finally {
+      setIsAdding(false);
     }
   };
 
@@ -280,6 +284,7 @@ function ExpenseBucket({
               onChange={(e) => setAmount(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {
+                  e.preventDefault();
                   handleAdd();
                 }
               }}
@@ -297,10 +302,11 @@ function ExpenseBucket({
             />
           </div>
           
-          {/* Add button */}
+          {/* Add button - disabled while submitting to prevent duplicate expenses */}
           <button
+            type="button"
             onClick={handleAdd}
-            disabled={!name.trim() || !amount}
+            disabled={!name.trim() || !amount || isAdding}
             className="w-full py-2 px-3 bg-primary-400 text-white rounded-lg font-semibold text-xs hover:bg-primary-500 active:scale-[0.98] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-primary-400 flex items-center justify-center gap-1.5 shadow-soft"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

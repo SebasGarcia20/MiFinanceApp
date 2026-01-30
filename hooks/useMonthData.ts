@@ -35,7 +35,7 @@ export function useMonthData(period: PeriodFormat) {
 
     try {
       // Load month data
-      const monthDataRes = await fetch(`/api/month-data?period=${encodeURIComponent(period)}`);
+      const monthDataRes = await fetch(`/api/month-data?period=${encodeURIComponent(period)}`, { cache: 'no-store' });
       if (!monthDataRes.ok) {
         if (monthDataRes.status === 401) {
           throw new Error('Unauthorized');
@@ -389,11 +389,11 @@ export function useMonthData(period: PeriodFormat) {
     }
   }, [period]);
 
-  // Get previous month expenses (for bucket payments)
-  const getPreviousMonthExpenses = useCallback(async (currentPeriod: PeriodFormat): Promise<Partial<Record<ExpenseBucket, number>>> => {
+  // Get previous month expenses (for bucket payments). Pass periodStartDay so the previous period matches your settings (e.g. 15→15).
+  const getPreviousMonthExpenses = useCallback(async (currentPeriod: PeriodFormat, periodStartDay?: number): Promise<Partial<Record<ExpenseBucket, number>>> => {
     try {
-      const prevPeriod = getPreviousPeriod(currentPeriod);
-      const response = await fetch(`/api/expenses?period=${encodeURIComponent(prevPeriod)}`);
+      const prevPeriod = getPreviousPeriod(currentPeriod, periodStartDay);
+      const response = await fetch(`/api/expenses?period=${encodeURIComponent(prevPeriod)}`, { cache: 'no-store' });
 
       if (!response.ok) {
         return {};
