@@ -104,7 +104,7 @@ export async function PUT(request: NextRequest) {
 
     return NextResponse.json({
       periodStartDay: settings.periodStartDay,
-      language: settings.language || 'es',
+      language: (settings as { language?: string }).language ?? 'es',
     });
   } catch (error: any) {
     if (error.message === 'Unauthorized') {
