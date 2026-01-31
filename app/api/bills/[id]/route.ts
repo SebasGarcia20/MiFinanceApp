@@ -14,7 +14,7 @@ export async function PATCH(
     const userId = await requireUserId();
     const { id } = await params;
     const body = await request.json();
-    const { name, amount, dueDate, categoryId } = body;
+    const { name, amount, dueDate, dueDay, categoryId } = body;
 
     const updates: any = {};
 
@@ -48,6 +48,21 @@ export async function PATCH(
           { error: 'Due date must be in YYYY-MM-DD format' },
           { status: 400 }
         );
+      }
+    }
+
+    if (dueDay !== undefined) {
+      if (dueDay === null) {
+        updates.dueDay = null;
+      } else {
+        const d = Number(dueDay);
+        if (!Number.isInteger(d) || d < 1 || d > 31) {
+          return NextResponse.json(
+            { error: 'Due day must be a number between 1 and 31' },
+            { status: 400 }
+          );
+        }
+        updates.dueDay = Math.min(31, Math.max(1, Math.round(d)));
       }
     }
 

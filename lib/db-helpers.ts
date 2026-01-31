@@ -17,6 +17,7 @@ export async function createFixedPayment(userId: string, data: {
   name: string;
   amount: number;
   dueDate?: string;
+  dueDay?: number;
   categoryId?: string;
 }) {
   return await prisma.fixedPayment.create({
@@ -25,6 +26,7 @@ export async function createFixedPayment(userId: string, data: {
       name: data.name,
       amount: data.amount,
       dueDate: data.dueDate,
+      dueDay: data.dueDay,
       categoryId: data.categoryId,
     },
   });
@@ -34,6 +36,7 @@ export async function updateFixedPayment(userId: string, id: string, data: {
   name?: string;
   amount?: number;
   dueDate?: string;
+  dueDay?: number;
   categoryId?: string;
 }) {
   // Ensure the payment belongs to the user

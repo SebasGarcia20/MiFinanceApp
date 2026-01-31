@@ -93,7 +93,8 @@ model FixedPayment {
   userId     String
   name       String
   amount     Int // stored as integer (cents)
-  dueDate    String? // YYYY-MM-DD format
+  dueDate    String? // YYYY-MM-DD format (legacy / one-off)
+  dueDay     Int? // Day of month (1-31) — due on this day every month
   categoryId String? // Optional category
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt

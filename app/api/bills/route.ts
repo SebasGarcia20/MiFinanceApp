@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
   try {
     const userId = await requireUserId();
     const body = await request.json();
-    const { name, amount, dueDate, categoryId } = body;
+    const { name, amount, dueDate, dueDay, categoryId } = body;
 
     // Validation
     if (!name || typeof name !== 'string' || name.trim().length === 0) {
@@ -50,10 +50,21 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    if (dueDay !== undefined && dueDay !== null) {
+      const d = Number(dueDay);
+      if (!Number.isInteger(d) || d < 1 || d > 31) {
+        return NextResponse.json(
+          { error: 'Due day must be a number between 1 and 31' },
+          { status: 400 }
+        );
+      }
+    }
+
     const bill = await createFixedPayment(userId, {
       name: name.trim(),
       amount: Math.round(amount), // Ensure integer (cents)
       dueDate: dueDate || undefined,
+      dueDay: dueDay != null && !Number.isNaN(Number(dueDay)) ? Math.min(31, Math.max(1, Math.round(Number(dueDay)))) : undefined,
       categoryId: categoryId || undefined,
     });
 

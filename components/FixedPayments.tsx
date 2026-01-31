@@ -6,6 +6,27 @@ import { formatCurrency, parseCurrencyInput } from '@/lib/currency';
 import { getPreviousPeriod, formatPeriodDisplay, PeriodFormat } from '@/lib/date';
 import { useTranslation } from '@/hooks/useTranslation';
 
+/** Ordinal for day: 1st, 2nd, 3rd, 4th, ... */
+function ordinalDay(day: number): string {
+  if (day >= 11 && day <= 13) return `${day}th`;
+  switch (day % 10) {
+    case 1: return `${day}st`;
+    case 2: return `${day}nd`;
+    case 3: return `${day}rd`;
+    default: return `${day}th`;
+  }
+}
+
+/** Due date in the viewed period's month (from period string YYYY-MM-DD). Used so overdue is correct when viewing next month. */
+function getDueDateInPeriodMonth(period: string, dueDay: number): Date {
+  const [y, m] = period.split('-').map(Number);
+  const year = y;
+  const month = m - 1; // JS months 0-indexed
+  const lastDay = new Date(year, month + 1, 0).getDate();
+  const day = Math.min(dueDay, lastDay);
+  return new Date(year, month, day);
+}
+
 interface FixedPaymentsProps {
   currentPeriod: PeriodFormat;
   periodStartDay?: number; // e.g. 15 for 15th–14th periods; used so "From previous period" shows the correct range
@@ -58,7 +79,8 @@ export default function FixedPayments({
   const [isAddingFixed, setIsAddingFixed] = useState(false);
   const [newName, setNewName] = useState('');
   const [newAmount, setNewAmount] = useState('');
-  const [newDueDate, setNewDueDate] = useState('');
+  const [newDueDay, setNewDueDay] = useState('');
+  const [newDueDayError, setNewDueDayError] = useState<string | null>(null);
   const [isMounted, setIsMounted] = useState(false);
   // Initialize with a consistent default to ensure server and client match initially
   // Use the same default pattern as OverviewPage (day 1 of current month)
@@ -131,15 +153,26 @@ export default function FixedPayments({
     const amount = parseCurrencyInput(newAmount);
     if (amount === 0) return;
 
+    if (newDueDay.trim()) {
+      const n = Number(newDueDay);
+      if (Number.isNaN(n) || n < 1 || n > 31) {
+        setNewDueDayError(t('overview.dueDayError'));
+        return;
+      }
+    }
+    setNewDueDayError(null);
+
+    const dueDayNum = newDueDay.trim() ? Math.min(31, Math.max(1, Math.round(Number(newDueDay)))) : undefined;
     onAddFixedPayment({
       name: newName.trim(),
       amount,
-      dueDate: newDueDate || undefined,
+      dueDay: dueDayNum,
     });
 
     setNewName('');
     setNewAmount('');
-    setNewDueDate('');
+    setNewDueDay('');
+    setNewDueDayError(null);
     setIsAddingFixed(false);
   };
 
@@ -151,6 +184,10 @@ export default function FixedPayments({
   const bucketPaymentsWithAmount = bucketPayments.filter(bp => bp.amount > 0);
   const bucketTotal = bucketPaymentsWithAmount.reduce((sum, bp) => sum + (bp.paid ? 0 : bp.amount), 0);
   const totalUnpaid = bucketPaymentsWithAmount.filter(bp => !bp.paid).length;
+  // Total spent in the previous period (all buckets)
+  const totalSpentInPreviousPeriod = Object.values(previousMonthExpenses).reduce((s: number, a) => s + (a ?? 0), 0);
+  // Combined total: recurring bills (planned) + from previous period
+  const totalRecurringAndPrevious = plannedRecurringTotal + totalSpentInPreviousPeriod;
 
   return (
     <div className="card">
@@ -203,18 +240,29 @@ export default function FixedPayments({
                     setIsAddingFixed(false);
                     setNewName('');
                     setNewAmount('');
-                    setNewDueDate('');
+                    setNewDueDay('');
+                    setNewDueDayError(null);
                   }
                 }}
                 className="input-field text-sm"
               />
               <input
-                type="date"
-                placeholder="Due date (optional)"
-                value={newDueDate}
-                onChange={(e) => setNewDueDate(e.target.value)}
-                className="input-field text-sm"
+                type="number"
+                min={1}
+                max={31}
+                placeholder={t('overview.dueDayLabel')}
+                value={newDueDay}
+                onChange={(e) => {
+                  setNewDueDay(e.target.value);
+                  if (newDueDayError) setNewDueDayError(null);
+                }}
+                className={`input-field text-sm ${newDueDayError ? 'border-red-400 focus:ring-red-400' : ''}`}
               />
+              {newDueDayError && (
+                <p className="text-xs text-red-600" role="alert">
+                  {newDueDayError}
+                </p>
+              )}
             </div>
             <div className="flex gap-2">
               <button
@@ -228,7 +276,8 @@ export default function FixedPayments({
                   setIsAddingFixed(false);
                   setNewName('');
                   setNewAmount('');
-                  setNewDueDate('');
+                  setNewDueDay('');
+                  setNewDueDayError(null);
                 }}
                 className="btn-secondary text-xs px-2 py-1"
               >
@@ -250,6 +299,7 @@ export default function FixedPayments({
                 key={payment.id}
                 payment={payment}
                 isPaid={paidFixedPayments.includes(payment.id)}
+                viewedPeriod={currentPeriod}
                 onUpdate={onUpdateFixedPayment}
                 onDelete={onDeleteFixedPayment}
                 onTogglePaid={onToggleFixedPaymentPaid}
@@ -324,6 +374,16 @@ export default function FixedPayments({
           </div>
         )}
       </div>
+
+      {/* Card footer: combined total = recurring (planned) + from previous period */}
+      {isMounted && totalRecurringAndPrevious > 0 && (
+        <div className="mt-4 pt-4 border-t-2 border-accent-200">
+          <div className="flex justify-between items-center text-xs">
+            <span className="text-accent-600">{t('overview.totalRecurringAndPreviousPeriod')}</span>
+            <span className="font-semibold text-accent-800">{formatCurrency(totalRecurringAndPrevious)}</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -331,45 +391,71 @@ export default function FixedPayments({
 interface RecurringPaymentRowProps {
   payment: FixedPayment;
   isPaid: boolean;
+  /** Viewed period (YYYY-MM-DD) so overdue uses that month, not "today's" month. */
+  viewedPeriod: PeriodFormat;
   onUpdate: (id: string, updates: Partial<FixedPayment>) => void;
   onDelete: (id: string) => void;
   onTogglePaid: (id: string, paid: boolean) => void;
 }
 
-function RecurringPaymentRow({ payment, isPaid, onUpdate, onDelete, onTogglePaid }: RecurringPaymentRowProps) {
+function RecurringPaymentRow({ payment, isPaid, viewedPeriod, onUpdate, onDelete, onTogglePaid }: RecurringPaymentRowProps) {
+  const { t } = useTranslation();
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState(payment.name);
   const [amount, setAmount] = useState(payment.amount.toString());
   const [dueDate, setDueDate] = useState(payment.dueDate || '');
+  const [dueDay, setDueDay] = useState(payment.dueDay != null ? String(payment.dueDay) : '');
+  const [dueDayError, setDueDayError] = useState<string | null>(null);
   const [isOverdue, setIsOverdue] = useState(false);
 
-  // Calculate overdue status only on client to avoid hydration mismatch
+  // Overdue: when dueDay is set, use viewed period's month so next month doesn't show overdue until that month's due date passes
   useEffect(() => {
-    if (payment.dueDate) {
+    if (payment.dueDay != null && payment.dueDay >= 1 && payment.dueDay <= 31) {
+      const dueInViewedMonth = getDueDateInPeriodMonth(viewedPeriod, payment.dueDay);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      dueInViewedMonth.setHours(0, 0, 0, 0);
+      setIsOverdue(dueInViewedMonth < today && !isPaid);
+    } else if (payment.dueDate) {
       const due = new Date(payment.dueDate);
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       due.setHours(0, 0, 0, 0);
       setIsOverdue(due < today && !isPaid);
+    } else {
+      setIsOverdue(false);
     }
-  }, [payment.dueDate, isPaid]);
+  }, [payment.dueDate, payment.dueDay, isPaid, viewedPeriod]);
 
   const handleSave = () => {
     const amountNum = parseCurrencyInput(amount);
-    if (name.trim() && amountNum > 0) {
-      onUpdate(payment.id, {
-        name: name.trim(),
-        amount: amountNum,
-        dueDate: dueDate || undefined,
-      });
-      setIsEditing(false);
+    if (!name.trim() || amountNum <= 0) return;
+
+    if (dueDay.trim()) {
+      const n = Number(dueDay);
+      if (Number.isNaN(n) || n < 1 || n > 31) {
+        setDueDayError(t('overview.dueDayError'));
+        return;
+      }
     }
+    setDueDayError(null);
+
+    const dueDayNum = dueDay.trim() ? Math.min(31, Math.max(1, Math.round(Number(dueDay)))) : undefined;
+    onUpdate(payment.id, {
+      name: name.trim(),
+      amount: amountNum,
+      dueDate: dueDate || undefined,
+      dueDay: dueDayNum,
+    });
+    setIsEditing(false);
   };
 
   const handleCancel = () => {
     setName(payment.name);
     setAmount(payment.amount.toString());
     setDueDate(payment.dueDate || '');
+    setDueDay(payment.dueDay != null ? String(payment.dueDay) : '');
+    setDueDayError(null);
     setIsEditing(false);
   };
 
@@ -394,11 +480,22 @@ function RecurringPaymentRow({ payment, isPaid, onUpdate, onDelete, onTogglePaid
           className="input-field text-xs"
         />
         <input
-          type="date"
-          value={dueDate}
-          onChange={(e) => setDueDate(e.target.value)}
-          className="input-field text-xs"
+          type="number"
+          min={1}
+          max={31}
+          placeholder={t('overview.dueDayLabel')}
+          value={dueDay}
+          onChange={(e) => {
+            setDueDay(e.target.value);
+            if (dueDayError) setDueDayError(null);
+          }}
+          className={`input-field text-xs ${dueDayError ? 'border-red-400 focus:ring-red-400' : ''}`}
         />
+        {dueDayError && (
+          <p className="text-xs text-red-600" role="alert">
+            {dueDayError}
+          </p>
+        )}
         <div className="flex gap-1">
           <button
             onClick={handleSave}
@@ -449,7 +546,18 @@ function RecurringPaymentRow({ payment, isPaid, onUpdate, onDelete, onTogglePaid
         <div className={`text-xs font-bold whitespace-nowrap ml-2 flex-shrink-0 ${isPaid ? 'text-accent-400' : 'text-primary-600'}`}>
           {formatCurrency(payment.amount)}
         </div>
-        {payment.dueDate && (
+        {(payment.dueDay != null && payment.dueDay >= 1 && payment.dueDay <= 31) ? (
+          <div className="flex items-center gap-1.5 whitespace-nowrap ml-3 flex-shrink-0">
+            <span className="text-xs text-accent-500">
+              {t('overview.dueOnTheDay')} {ordinalDay(payment.dueDay)}
+            </span>
+            {isOverdue && !isPaid && (
+              <span className="text-xs bg-red-100 text-red-700 px-1.5 py-0.5 rounded-full font-medium">
+                Overdue
+              </span>
+            )}
+          </div>
+        ) : payment.dueDate ? (
           <div className="flex items-center gap-1.5 whitespace-nowrap ml-3 flex-shrink-0">
             <span className="text-xs text-accent-500">
               {new Date(payment.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
@@ -460,7 +568,7 @@ function RecurringPaymentRow({ payment, isPaid, onUpdate, onDelete, onTogglePaid
               </span>
             )}
           </div>
-        )}
+        ) : null}
       </div>
       {/* Absolutely positioned overlay for Edit/Delete buttons - appears on hover */}
       <div className="absolute right-2 top-1/2 -translate-y-1/2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none group-hover:pointer-events-auto bg-white/95 backdrop-blur-sm px-1 py-0.5 rounded shadow-sm">

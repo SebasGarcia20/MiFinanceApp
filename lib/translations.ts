@@ -36,11 +36,16 @@ export interface Translations {
   overview: {
     title: string;
     currentMonthExpenses: string;
-    bills: string;
+    bills: string; // Now means "Fixed Commitments" - recurring payments + balances to pay
     planned: string;
     recurringPayments: string;
+    dueDayLabel: string;
+    dueDayError: string;
+    dueOnTheDay: string;
     fromPreviousPeriod: string;
     unpaidFromPreviousPeriod: string;
+    totalSpentInPreviousPeriod: string;
+    totalRecurringAndPreviousPeriod: string;
     noPaymentsFromPreviousPeriod: string;
     bucketPaymentsEmptyHint: string;
     addExpense: string;
@@ -306,11 +311,16 @@ const translations: Record<Language, Translations> = {
     overview: {
       title: 'Resumen',
       currentMonthExpenses: 'Gastos del Mes Actual',
-      bills: 'Facturas',
-      planned: 'Planificadas',
+      bills: 'Compromisos Fijos',
+      planned: 'Planificados',
       recurringPayments: 'Pagos Recurrentes',
+      dueDayLabel: 'Día de vencimiento (1-31)',
+      dueDayError: 'El día debe estar entre 1 y 31.',
+      dueOnTheDay: 'Vence el día',
       fromPreviousPeriod: 'Del Período Anterior',
       unpaidFromPreviousPeriod: 'Sin pagar del período anterior:',
+      totalSpentInPreviousPeriod: 'Total gastado en el período anterior',
+      totalRecurringAndPreviousPeriod: 'Total (recurrentes + período anterior)',
       noPaymentsFromPreviousPeriod: 'No hay pagos del período anterior',
       bucketPaymentsEmptyHint: 'Aparecerán aquí cuando tengas gastos en el período anterior (p. ej. saldo de tarjeta).',
       addExpense: 'Agregar Gasto',
@@ -321,7 +331,7 @@ const translations: Record<Language, Translations> = {
       noExpensesYet: 'Aún no hay gastos',
       summary: 'Resumen',
       expensesByBucket: 'Gastos por bolsillo:',
-      paidBills: 'Facturas pagadas:',
+      paidBills: 'Compromisos pagados:',
       totalExpenses: 'Total de gastos:',
       moneyLeft: 'Dinero restante:',
       availableForSavings: 'Disponible para ahorros o próximo período',
@@ -552,11 +562,16 @@ const translations: Record<Language, Translations> = {
     overview: {
       title: 'Overview',
       currentMonthExpenses: 'Current Month Expenses',
-      bills: 'Bills',
+      bills: 'Fixed Commitments',
       planned: 'Planned',
       recurringPayments: 'Recurring Payments',
+      dueDayLabel: 'Due day (1-31)',
+      dueDayError: 'Day must be between 1 and 31.',
+      dueOnTheDay: 'Due on the',
       fromPreviousPeriod: 'From Previous Period',
       unpaidFromPreviousPeriod: 'Unpaid from previous period:',
+      totalSpentInPreviousPeriod: 'Total spent in previous period',
+      totalRecurringAndPreviousPeriod: 'Total (recurring + previous period)',
       noPaymentsFromPreviousPeriod: 'No payments from previous period',
       bucketPaymentsEmptyHint: 'They will appear here when you have expenses in the previous period (e.g. credit card balance).',
       addExpense: 'Add Expense',
@@ -567,7 +582,7 @@ const translations: Record<Language, Translations> = {
       noExpensesYet: 'No expenses yet',
       summary: 'Summary',
       expensesByBucket: 'Expenses by bucket:',
-      paidBills: 'Paid bills:',
+      paidBills: 'Paid commitments:',
       totalExpenses: 'Total expenses:',
       moneyLeft: 'Money Left:',
       availableForSavings: 'Available for savings or next period',

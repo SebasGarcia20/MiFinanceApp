@@ -16,7 +16,8 @@ export interface FixedPayment {
   id: string;
   name: string;
   amount: number; // stored as integer (cents)
-  dueDate?: string; // YYYY-MM-DD format
+  dueDate?: string; // YYYY-MM-DD format (legacy / one-off)
+  dueDay?: number; // Day of month (1-31) — due on this day every month
   categoryId?: string; // Optional category
 }
 
