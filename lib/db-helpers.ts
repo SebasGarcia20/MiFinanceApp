@@ -28,7 +28,7 @@ export async function createFixedPayment(userId: string, data: {
       dueDate: data.dueDate,
       dueDay: data.dueDay,
       categoryId: data.categoryId,
-    },
+    } as unknown as import('@prisma/client').Prisma.FixedPaymentCreateInput,
   });
 }
 
@@ -50,7 +50,7 @@ export async function updateFixedPayment(userId: string, id: string, data: {
   
   return await prisma.fixedPayment.update({
     where: { id },
-    data,
+    data: data as unknown as import('@prisma/client').Prisma.FixedPaymentUpdateInput,
   });
 }
 
