@@ -108,7 +108,7 @@ export async function POST(request: NextRequest) {
       amount: bucketPayment.amount,
       paid: bucketPayment.paid,
       dueDate: bucketPayment.dueDate || undefined,
-    }, existing ? 200 : 201);
+    }, { status: existing ? 200 : 201 });
   } catch (error: any) {
     if (error.message === 'Unauthorized') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

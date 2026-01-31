@@ -35,9 +35,10 @@ export async function GET(request: NextRequest) {
       
       // Try to get just periodStartDay using a workaround
       try {
+        const fallbackUserId = await requireUserId();
         const { prisma } = await import('@/lib/prisma');
         const result = await prisma.$queryRaw<Array<{ periodStartDay: number }>>`
-          SELECT "periodStartDay" FROM "UserSettings" WHERE "userId" = ${userId} LIMIT 1
+          SELECT "periodStartDay" FROM "UserSettings" WHERE "userId" = ${fallbackUserId} LIMIT 1
         `;
         
         if (result && result.length > 0) {
