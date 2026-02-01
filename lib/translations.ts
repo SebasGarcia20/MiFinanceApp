@@ -44,6 +44,7 @@ export interface Translations {
     dueOnTheDay: string;
     fromPreviousPeriod: string;
     unpaidFromPreviousPeriod: string;
+    paidFromPreviousPeriod: string;
     totalSpentInPreviousPeriod: string;
     totalRecurringAndPreviousPeriod: string;
     noPaymentsFromPreviousPeriod: string;
@@ -57,6 +58,7 @@ export interface Translations {
     summary: string;
     expensesByBucket: string;
     paidBills: string;
+    recurringPaymentsPaid: string;
     totalExpenses: string;
     moneyLeft: string;
     availableForSavings: string;
@@ -319,6 +321,7 @@ const translations: Record<Language, Translations> = {
       dueOnTheDay: 'Vence el día',
       fromPreviousPeriod: 'Del Período Anterior',
       unpaidFromPreviousPeriod: 'Sin pagar del período anterior:',
+      paidFromPreviousPeriod: 'Pagado del período anterior:',
       totalSpentInPreviousPeriod: 'Total gastado en el período anterior',
       totalRecurringAndPreviousPeriod: 'Total (recurrentes + período anterior)',
       noPaymentsFromPreviousPeriod: 'No hay pagos del período anterior',
@@ -332,6 +335,7 @@ const translations: Record<Language, Translations> = {
       summary: 'Resumen',
       expensesByBucket: 'Gastos por bolsillo:',
       paidBills: 'Compromisos pagados:',
+      recurringPaymentsPaid: 'Pagos recurrentes pagados:',
       totalExpenses: 'Total de gastos:',
       moneyLeft: 'Dinero restante:',
       availableForSavings: 'Disponible para ahorros o próximo período',
@@ -570,6 +574,7 @@ const translations: Record<Language, Translations> = {
       dueOnTheDay: 'Due on the',
       fromPreviousPeriod: 'From Previous Period',
       unpaidFromPreviousPeriod: 'Unpaid from previous period:',
+      paidFromPreviousPeriod: 'Paid from previous period:',
       totalSpentInPreviousPeriod: 'Total spent in previous period',
       totalRecurringAndPreviousPeriod: 'Total (recurring + previous period)',
       noPaymentsFromPreviousPeriod: 'No payments from previous period',
@@ -583,6 +588,7 @@ const translations: Record<Language, Translations> = {
       summary: 'Summary',
       expensesByBucket: 'Expenses by bucket:',
       paidBills: 'Paid commitments:',
+      recurringPaymentsPaid: 'Recurring payments paid:',
       totalExpenses: 'Total expenses:',
       moneyLeft: 'Money Left:',
       availableForSavings: 'Available for savings or next period',

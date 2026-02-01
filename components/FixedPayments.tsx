@@ -182,7 +182,8 @@ export default function FixedPayments({
 
   // Only count bucket payments with amount > 0 (hide "previous period" rows when that period had no expenses, e.g. December)
   const bucketPaymentsWithAmount = bucketPayments.filter(bp => bp.amount > 0);
-  const bucketTotal = bucketPaymentsWithAmount.reduce((sum, bp) => sum + (bp.paid ? 0 : bp.amount), 0);
+  const totalUnpaidFromPrevious = bucketPaymentsWithAmount.reduce((sum, bp) => sum + (bp.paid ? 0 : bp.amount), 0);
+  const totalPaidFromPrevious = bucketPaymentsWithAmount.reduce((sum, bp) => sum + (bp.paid ? bp.amount : 0), 0);
   const totalUnpaid = bucketPaymentsWithAmount.filter(bp => !bp.paid).length;
   // Total spent in the previous period (all buckets)
   const totalSpentInPreviousPeriod = Object.values(previousMonthExpenses).reduce((s: number, a) => s + (a ?? 0), 0);
@@ -366,10 +367,16 @@ export default function FixedPayments({
         </div>
 
         {isMounted && bucketPaymentsWithAmount.length > 0 && (
-          <div className="mt-3 pt-2 border-t border-accent-100">
+          <div className="mt-3 pt-2 border-t border-accent-100 space-y-1">
+            {totalPaidFromPrevious > 0 && (
+              <div className="flex justify-between items-center text-xs">
+                <span className="text-accent-600">{t('overview.paidFromPreviousPeriod')}</span>
+                <span className="font-semibold text-green-600">{formatCurrency(totalPaidFromPrevious)}</span>
+              </div>
+            )}
             <div className="flex justify-between items-center text-xs">
               <span className="text-accent-600">{t('overview.unpaidFromPreviousPeriod')}</span>
-              <span className="font-semibold text-primary-600">{formatCurrency(bucketTotal)}</span>
+              <span className="font-semibold text-primary-600">{formatCurrency(totalUnpaidFromPrevious)}</span>
             </div>
           </div>
         )}
@@ -516,7 +523,7 @@ function RecurringPaymentRow({ payment, isPaid, viewedPeriod, onUpdate, onDelete
 
   return (
     <div 
-      className={`px-2 py-1.5 border-2 rounded-lg bg-white flex items-center group transition-all duration-200 relative ${
+      className={`px-2 py-1 border-2 rounded-lg bg-white flex items-center group transition-all duration-200 relative ${
         isPaid
           ? 'border-green-200 bg-green-50/30 opacity-75'
           : isOverdue
@@ -531,7 +538,7 @@ function RecurringPaymentRow({ payment, isPaid, viewedPeriod, onUpdate, onDelete
           onChange={(e) => onTogglePaid(payment.id, e.target.checked)}
           className="w-4 h-4 rounded border-accent-300 text-primary-400 focus:ring-primary-400 focus:ring-1 cursor-pointer flex-shrink-0"
         />
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 leading-tight">
           <div className="flex items-center gap-2">
             <span className={`text-xs font-semibold truncate ${isPaid ? 'line-through text-accent-400' : 'text-accent-800'}`}>
               {payment.name}
@@ -542,33 +549,24 @@ function RecurringPaymentRow({ payment, isPaid, viewedPeriod, onUpdate, onDelete
               </span>
             )}
           </div>
+          {(payment.dueDay != null && payment.dueDay >= 1 && payment.dueDay <= 31) ? (
+            <p className="text-[10px] text-accent-500 mt-0 truncate leading-tight" title={`${t('overview.dueOnTheDay')} ${ordinalDay(payment.dueDay)}`}>
+              {ordinalDay(payment.dueDay)}
+            </p>
+          ) : payment.dueDate ? (
+            <p className="text-[10px] text-accent-500 mt-0 truncate leading-tight">
+              {new Date(payment.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+            </p>
+          ) : null}
         </div>
         <div className={`text-xs font-bold whitespace-nowrap ml-2 flex-shrink-0 ${isPaid ? 'text-accent-400' : 'text-primary-600'}`}>
           {formatCurrency(payment.amount)}
         </div>
-        {(payment.dueDay != null && payment.dueDay >= 1 && payment.dueDay <= 31) ? (
-          <div className="flex items-center gap-1.5 whitespace-nowrap ml-3 flex-shrink-0">
-            <span className="text-xs text-accent-500">
-              {t('overview.dueOnTheDay')} {ordinalDay(payment.dueDay)}
-            </span>
-            {isOverdue && !isPaid && (
-              <span className="text-xs bg-red-100 text-red-700 px-1.5 py-0.5 rounded-full font-medium">
-                Overdue
-              </span>
-            )}
-          </div>
-        ) : payment.dueDate ? (
-          <div className="flex items-center gap-1.5 whitespace-nowrap ml-3 flex-shrink-0">
-            <span className="text-xs text-accent-500">
-              {new Date(payment.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-            </span>
-            {isOverdue && !isPaid && (
-              <span className="text-xs bg-red-100 text-red-700 px-1.5 py-0.5 rounded-full font-medium">
-                Overdue
-              </span>
-            )}
-          </div>
-        ) : null}
+        {isOverdue && !isPaid && (
+          <span className="text-[10px] bg-red-100 text-red-700 px-1.5 py-0.5 rounded-full font-medium flex-shrink-0 ml-1">
+            Overdue
+          </span>
+        )}
       </div>
       {/* Absolutely positioned overlay for Edit/Delete buttons - appears on hover */}
       <div className="absolute right-2 top-1/2 -translate-y-1/2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none group-hover:pointer-events-auto bg-white/95 backdrop-blur-sm px-1 py-0.5 rounded shadow-sm">

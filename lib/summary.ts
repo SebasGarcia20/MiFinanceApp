@@ -20,6 +20,12 @@ export function calculateSummary(
   // Remaining recurring total = planned - paid
   const remainingRecurringTotal = plannedRecurringTotal - paidRecurringTotal;
 
+  // Paid from previous period = bucket payments marked as paid (e.g. credit card payoff, cash settled)
+  const bucketPayments = data.bucketPayments || [];
+  const paidFromPreviousPeriod = bucketPayments
+    .filter(bp => bp.paid && bp.amount > 0)
+    .reduce((sum, bp) => sum + bp.amount, 0);
+
   const bucketIds = bucketConfigs.map(b => b.id);
   const expensesByBucket: Record<string, number> = bucketIds.reduce((acc, bucketId) => {
     acc[bucketId] = data.expenses
@@ -30,9 +36,8 @@ export function calculateSummary(
 
   const expensesTotal = Object.values(expensesByBucket).reduce((sum, total) => sum + total, 0);
   
-  // Total expenses = bucket expenses + paid recurring payments
-  // Only paid recurring payments count as real expenses (money spent)
-  const grandTotal = expensesTotal + paidRecurringTotal;
+  // Total = bucket expenses + recurring paid (bills) + paid from previous period (e.g. credit card payoff)
+  const grandTotal = expensesTotal + paidRecurringTotal + paidFromPreviousPeriod;
   
   // Calculate total savings for current period
   // Savings reduce Money Left but do NOT count as expenses
@@ -52,6 +57,7 @@ export function calculateSummary(
     fixedPaymentsTotal: remainingRecurringTotal,
     plannedRecurringTotal,
     paidRecurringTotal,
+    paidFromPreviousPeriod,
     remainingRecurringTotal,
     expensesByBucket,
     grandTotal,

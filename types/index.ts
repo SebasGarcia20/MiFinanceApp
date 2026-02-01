@@ -75,10 +75,11 @@ export interface MonthSummary {
   salary: number;
   fixedPaymentsTotal: number; // Deprecated: use remainingRecurringTotal instead, kept for backward compatibility
   plannedRecurringTotal: number; // Sum of ALL recurring payments (paid + unpaid) - never changes during month
-  paidRecurringTotal: number; // Sum of recurring payments marked as paid
+  paidRecurringTotal: number; // Sum of recurring payments marked as paid (rent, subscriptions, etc.)
+  paidFromPreviousPeriod: number; // Sum of bucket payments marked as paid (e.g. credit card payoff from last period)
   remainingRecurringTotal: number; // plannedRecurringTotal - paidRecurringTotal
   expensesByBucket: Record<string, number>; // Changed from Record<ExpenseBucket, number>
-  grandTotal: number; // expensesTotal + paidRecurringTotal (only paid recurring payments count as expenses)
+  grandTotal: number; // expensesTotal + paidRecurringTotal + paidFromPreviousPeriod
   totalSavings: number; // Sum of all savings contributions (reduces Money Left but not expenses)
   remainingFromSalary: number; // salary - grandTotal - totalSavings
   monthlyLimit: number;

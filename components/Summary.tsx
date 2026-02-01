@@ -88,12 +88,18 @@ export default function Summary({ summary, bucketConfigs, onUpdateLimit }: Summa
           </div>
         )}
 
-        {/* Paid bills */}
-        <div className="pt-2.5 border-t border-accent-200">
+        {/* Fixed expenses: recurring (monthly bills) vs previous period payoffs */}
+        <div className="pt-2.5 border-t border-accent-200 space-y-1.5">
           <div className="flex justify-between text-sm items-center">
-            <span className="text-accent-600">{t('overview.paidBills')}</span>
+            <span className="text-accent-600">{t('overview.recurringPaymentsPaid')}</span>
             <span className="font-semibold text-accent-800">{formatCurrency(summary.paidRecurringTotal)}</span>
           </div>
+          {summary.paidFromPreviousPeriod > 0 && (
+            <div className="flex justify-between text-sm items-center">
+              <span className="text-accent-600">{t('overview.paidFromPreviousPeriod')}</span>
+              <span className="font-semibold text-green-600">{formatCurrency(summary.paidFromPreviousPeriod)}</span>
+            </div>
+          )}
         </div>
 
         {/* Grand total */}

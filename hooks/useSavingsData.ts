@@ -50,47 +50,58 @@ export function useSavingsData() {
   }, []);
 
   const addGoal = useCallback((goalData: Omit<SavingsGoal, 'id' | 'order'>) => {
-    const newGoal: SavingsGoal = {
-      ...goalData,
-      id: `goal-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      order: goals.length,
-    };
-    const updated = [...goals, newGoal];
-    setGoals(updated);
-    saveSavingsGoals(updated);
-  }, [goals]);
+    setGoals(prev => {
+      const newGoal: SavingsGoal = {
+        ...goalData,
+        id: `goal-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        order: prev.length,
+      };
+      const updated = [...prev, newGoal];
+      saveSavingsGoals(updated);
+      return updated;
+    });
+  }, []);
 
   const updateGoal = useCallback((id: string, updates: Partial<SavingsGoal>) => {
-    const updated = goals.map(g => g.id === id ? { ...g, ...updates } : g);
-    setGoals(updated);
-    saveSavingsGoals(updated);
-  }, [goals]);
+    setGoals(prev => {
+      const updated = prev.map(g => g.id === id ? { ...g, ...updates } : g);
+      saveSavingsGoals(updated);
+      return updated;
+    });
+  }, []);
 
   const deleteGoal = useCallback((id: string) => {
-    const updated = goals.filter(g => g.id !== id);
-    setGoals(updated);
-    saveSavingsGoals(updated);
-    // Also remove contributions for this goal
-    const updatedContributions = contributions.filter(c => c.goalId !== id);
-    setContributions(updatedContributions);
-    saveSavingsContributions(updatedContributions);
-  }, [goals, contributions]);
+    setGoals(prev => {
+      const updated = prev.filter(g => g.id !== id);
+      saveSavingsGoals(updated);
+      return updated;
+    });
+    setContributions(prev => {
+      const updated = prev.filter(c => c.goalId !== id);
+      saveSavingsContributions(updated);
+      return updated;
+    });
+  }, []);
 
   const addContribution = useCallback((contributionData: Omit<SavingsContribution, 'id'>) => {
     const newContribution: SavingsContribution = {
       ...contributionData,
       id: `contribution-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
     };
-    const updated = [...contributions, newContribution];
-    setContributions(updated);
-    saveSavingsContributions(updated);
-  }, [contributions]);
+    setContributions(prev => {
+      const updated = [...prev, newContribution];
+      saveSavingsContributions(updated);
+      return updated;
+    });
+  }, []);
 
   const deleteContribution = useCallback((id: string) => {
-    const updated = contributions.filter(c => c.id !== id);
-    setContributions(updated);
-    saveSavingsContributions(updated);
-  }, [contributions]);
+    setContributions(prev => {
+      const updated = prev.filter(c => c.id !== id);
+      saveSavingsContributions(updated);
+      return updated;
+    });
+  }, []);
 
   return {
     goals,
