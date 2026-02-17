@@ -27,6 +27,8 @@ model User {
   monthData            MonthData[]
   savingsGoals         SavingsGoal[]
   savingsContributions SavingsContribution[]
+  debts                Debt[]
+  debtPayments         DebtPayment[]
   settings             UserSettings?
 
   createdAt DateTime @default(now())
@@ -199,6 +201,38 @@ model SavingsContribution {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, goalId])
+  @@index([userId, period])
+}
+
+model Debt {
+  id        String   @id @default(cuid())
+  userId    String
+  name      String
+  totalAmount Int    // Total debt amount (cents)
+  order     Int     // Display order
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user     User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  payments DebtPayment[]
+
+  @@index([userId])
+}
+
+model DebtPayment {
+  id        String   @id @default(cuid())
+  userId    String
+  debtId    String
+  amount    Int      // Payment amount (cents)
+  date      String   // YYYY-MM-DD
+  period    String?  // Period format (optional, for filtering by month)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  debt Debt @relation(fields: [debtId], references: [id], onDelete: Cascade)
+
+  @@index([userId, debtId])
   @@index([userId, period])
 }
 

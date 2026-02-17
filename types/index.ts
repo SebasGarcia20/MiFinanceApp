@@ -71,6 +71,22 @@ export interface SavingsContribution {
   source: 'manual' | 'recurring'; // How the savings was added
 }
 
+export interface Debt {
+  id: string;
+  name: string;
+  totalAmount: number; // Total debt (cents)
+  order: number;
+  payments?: DebtPayment[]; // Optional, when loaded with payments
+}
+
+export interface DebtPayment {
+  id: string;
+  debtId: string;
+  amount: number; // Payment amount (cents)
+  date: string; // YYYY-MM-DD
+  period?: string;
+}
+
 export interface MonthSummary {
   salary: number;
   fixedPaymentsTotal: number; // Deprecated: use remainingRecurringTotal instead, kept for backward compatibility

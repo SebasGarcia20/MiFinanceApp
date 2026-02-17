@@ -15,6 +15,7 @@ export default function Sidebar() {
   const isOverview = pathname === '/';
   const isBuckets = pathname === '/buckets';
   const isSavings = pathname === '/savings';
+  const isDebts = pathname === '/debts';
   const isInsights = pathname === '/insights';
   const isSettings = pathname === '/settings';
 
@@ -64,6 +65,17 @@ export default function Sidebar() {
           label={t('nav.savings')}
           href="/savings"
           isActive={isSavings}
+        />
+        <SidebarItem
+          icon={
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33" />
+            </svg>
+          }
+          label={t('nav.debts')}
+          href="/debts"
+          isActive={isDebts}
         />
         <SidebarItem
           icon={

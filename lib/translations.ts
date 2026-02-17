@@ -27,6 +27,7 @@ export interface Translations {
     overview: string;
     buckets: string;
     savings: string;
+    debts: string;
     insights: string;
     settings: string;
     profile: string;
@@ -205,6 +206,25 @@ export interface Translations {
     remaining: string;
   };
 
+  // Debts Page
+  debts: {
+    title: string;
+    subtitle: string;
+    addNewDebt: string;
+    debtName: string;
+    debtNamePlaceholder: string;
+    totalAmount: string;
+    amountPlaceholder: string;
+    loading: string;
+    noDebtsYet: string;
+    totalPaid: string;
+    remaining: string;
+    progress: string;
+    addPayment: string;
+    amountPaid: string;
+    paidOff: string;
+  };
+
   // Onboarding
   onboarding: {
     welcome: string;
@@ -306,6 +326,7 @@ const translations: Record<Language, Translations> = {
       overview: 'Resumen',
       buckets: 'Bolsillos',
       savings: 'Ahorros',
+      debts: 'Deudas',
       insights: 'Análisis',
       settings: 'Configuración',
       profile: 'Perfil',
@@ -471,6 +492,23 @@ const translations: Record<Language, Translations> = {
       progress: 'Progreso',
       remaining: 'Restante:',
     },
+    debts: {
+      title: 'Deudas',
+      subtitle: 'Registra tus deudas y los pagos que haces cada mes hasta terminar de pagar.',
+      addNewDebt: 'Agregar deuda',
+      debtName: 'Nombre de la deuda',
+      debtNamePlaceholder: 'ej., Préstamo banco, Tarjeta X',
+      totalAmount: 'Monto total de la deuda',
+      amountPlaceholder: 'Monto',
+      loading: 'Cargando deudas...',
+      noDebtsYet: 'Aún no tienes deudas registradas. Toca "Agregar deuda" para comenzar.',
+      totalPaid: 'Total pagado:',
+      remaining: 'Restante:',
+      progress: 'Progreso',
+      addPayment: 'Registrar pago',
+      amountPaid: 'Monto del pago',
+      paidOff: '¡Pagada!',
+    },
     onboarding: {
       welcome: '¡Bienvenido a Flowly!',
       step1Title: 'Establece el Día de Inicio del Período',
@@ -559,6 +597,7 @@ const translations: Record<Language, Translations> = {
       overview: 'Overview',
       buckets: 'Buckets',
       savings: 'Savings',
+      debts: 'Debts',
       insights: 'Insights',
       settings: 'Settings',
       profile: 'Profile',
@@ -723,6 +762,23 @@ const translations: Record<Language, Translations> = {
       totalSaved: 'Total saved:',
       progress: 'Progress',
       remaining: 'Remaining:',
+    },
+    debts: {
+      title: 'Debts',
+      subtitle: 'Track your debts and add payments each month until you finish paying them off.',
+      addNewDebt: 'Add debt',
+      debtName: 'Debt name',
+      debtNamePlaceholder: 'e.g., Bank loan, Card X',
+      totalAmount: 'Total debt amount',
+      amountPlaceholder: 'Amount',
+      loading: 'Loading debts...',
+      noDebtsYet: 'No debts yet. Tap "Add debt" to get started.',
+      totalPaid: 'Total paid:',
+      remaining: 'Remaining:',
+      progress: 'Progress',
+      addPayment: 'Add payment',
+      amountPaid: 'Payment amount',
+      paidOff: 'Paid off!',
     },
     onboarding: {
       welcome: 'Welcome to Flowly!',

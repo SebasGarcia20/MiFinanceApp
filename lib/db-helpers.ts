@@ -328,6 +328,58 @@ export async function deleteSavingsContribution(userId: string, id: string) {
   });
 }
 
+// Debts
+export async function getUserDebts(userId: string) {
+  return await prisma.debt.findMany({
+    where: { userId },
+    orderBy: { order: 'asc' },
+    include: { payments: { orderBy: { createdAt: 'desc' } } },
+  });
+}
+
+export async function createDebt(userId: string, data: { name: string; totalAmount: number; order?: number }) {
+  const count = await prisma.debt.count({ where: { userId } });
+  return await prisma.debt.create({
+    data: {
+      userId,
+      name: data.name,
+      totalAmount: data.totalAmount,
+      order: data.order ?? count,
+    },
+  });
+}
+
+export async function updateDebt(userId: string, id: string, data: { name?: string; totalAmount?: number }) {
+  const existing = await prisma.debt.findFirst({ where: { id, userId } });
+  if (!existing) throw new Error('Debt not found or access denied');
+  return await prisma.debt.update({ where: { id }, data });
+}
+
+export async function deleteDebt(userId: string, id: string) {
+  const existing = await prisma.debt.findFirst({ where: { id, userId } });
+  if (!existing) throw new Error('Debt not found or access denied');
+  return await prisma.debt.delete({ where: { id } });
+}
+
+export async function createDebtPayment(userId: string, data: {
+  debtId: string;
+  amount: number;
+  date: string;
+  period?: string;
+}) {
+  const debt = await prisma.debt.findFirst({ where: { id: data.debtId, userId } });
+  if (!debt) throw new Error('Debt not found or access denied');
+  return await prisma.debtPayment.create({
+    data: {
+      userId,
+      debtId: data.debtId,
+      amount: data.amount,
+      date: data.date,
+      period: data.period ?? null,
+    },
+  });
+}
+
 // User Settings
 export async function getUserSettings(userId: string) {
   return await prisma.userSettings.findUnique({
