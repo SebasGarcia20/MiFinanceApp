@@ -60,7 +60,11 @@ export interface Translations {
     expensesByBucket: string;
     paidBills: string;
     recurringPaymentsPaid: string;
+    debtPaymentsThisPeriod: string;
     totalExpenses: string;
+    debtsCardTitle: string;
+    paidToDebtsThisPeriod: string;
+    addDebtPayment: string;
     moneyLeft: string;
     availableForSavings: string;
     monthlySalary: string;
@@ -79,6 +83,8 @@ export interface Translations {
     complete: string;
     completeWithCheck: string;
     viewAllGoals: string;
+    deleteExpenseConfirmTitle: string;
+    deleteExpenseConfirmMessage: string;
   };
 
   // Settings Page
@@ -357,7 +363,11 @@ const translations: Record<Language, Translations> = {
       expensesByBucket: 'Gastos por bolsillo:',
       paidBills: 'Compromisos pagados:',
       recurringPaymentsPaid: 'Pagos recurrentes pagados:',
+      debtPaymentsThisPeriod: 'Pagos a deudas este período:',
       totalExpenses: 'Total de gastos:',
+      debtsCardTitle: 'Deudas',
+      paidToDebtsThisPeriod: 'Pagado este período:',
+      addDebtPayment: 'Registrar pago',
       moneyLeft: 'Dinero restante:',
       availableForSavings: 'Disponible para ahorros o próximo período',
       monthlySalary: 'Salario Mensual',
@@ -376,6 +386,8 @@ const translations: Record<Language, Translations> = {
       complete: 'Completar',
       completeWithCheck: '✓ Completado',
       viewAllGoals: 'Ver todas las metas',
+      deleteExpenseConfirmTitle: '¿Eliminar gasto?',
+      deleteExpenseConfirmMessage: 'Esta acción no se puede deshacer.',
     },
     settings: {
       title: 'Configuración',
@@ -628,7 +640,11 @@ const translations: Record<Language, Translations> = {
       expensesByBucket: 'Expenses by bucket:',
       paidBills: 'Paid commitments:',
       recurringPaymentsPaid: 'Recurring payments paid:',
+      debtPaymentsThisPeriod: 'Debt payments this period:',
       totalExpenses: 'Total expenses:',
+      debtsCardTitle: 'Debts',
+      paidToDebtsThisPeriod: 'Paid this period:',
+      addDebtPayment: 'Add payment',
       moneyLeft: 'Money Left:',
       availableForSavings: 'Available for savings or next period',
       monthlySalary: 'Monthly Salary',
@@ -647,6 +663,8 @@ const translations: Record<Language, Translations> = {
       complete: 'Complete',
       completeWithCheck: '✓ Complete',
       viewAllGoals: 'View all goals',
+      deleteExpenseConfirmTitle: 'Delete expense?',
+      deleteExpenseConfirmMessage: 'This action cannot be undone.',
     },
     settings: {
       title: 'Settings',

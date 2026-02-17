@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import type { Expense, ExpenseBucket, BucketConfig, Category } from '@/types';
 import { formatCurrency } from '@/lib/currency';
 import { parseCurrencyInput } from '@/lib/currency';
@@ -358,7 +358,9 @@ interface ExpenseRowProps {
 }
 
 function ExpenseRow({ expense, bucketConfigs, categories, defaultCategoryId, onUpdate, onDelete, index }: ExpenseRowProps) {
+  const { t } = useTranslation();
   const [isEditing, setIsEditing] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [name, setName] = useState(expense.name);
   const [amount, setAmount] = useState(expense.amount.toString());
   const [categoryId, setCategoryId] = useState(expense.categoryId || defaultCategoryId);
@@ -382,10 +384,19 @@ function ExpenseRow({ expense, bucketConfigs, categories, defaultCategoryId, onU
     setIsEditing(false);
   };
 
+  useEffect(() => {
+    if (!showDeleteConfirm) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setShowDeleteConfirm(false);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [showDeleteConfirm]);
+
   if (isEditing) {
     return (
-      <div className="px-2 py-1.5 bg-white rounded-lg border-2 border-primary-400 space-y-2 animate-scale-in">
-        <div className="flex gap-2 items-center">
+      <div className="px-2 py-1.5 bg-white rounded-lg border-2 border-primary-400 space-y-1.5 animate-scale-in">
+        <div className="flex gap-1.5 items-center">
           <input
             type="text"
             value={name}
@@ -396,7 +407,7 @@ function ExpenseRow({ expense, bucketConfigs, categories, defaultCategoryId, onU
                 amountInput?.focus();
               }
             }}
-            className="input-field flex-1 min-w-0 text-base sm:text-xs border-primary-300 focus:border-primary-400 h-11 sm:h-10"
+            className="input-field flex-1 min-w-0 text-sm border-primary-300 focus:border-primary-400 h-9 sm:h-10"
             autoFocus
           />
           <input
@@ -407,18 +418,20 @@ function ExpenseRow({ expense, bucketConfigs, categories, defaultCategoryId, onU
               if (e.key === 'Enter') handleSave();
               if (e.key === 'Escape') handleCancel();
             }}
-            className="input-field w-24 sm:w-20 flex-shrink-0 text-base sm:text-xs border-primary-300 focus:border-primary-400 h-11 sm:h-10"
+            className="input-field w-20 flex-shrink-0 text-sm border-primary-300 focus:border-primary-400 h-9 sm:h-10"
           />
-          <div className="flex gap-2 flex-shrink-0">
+          <div className="flex gap-1 flex-shrink-0">
             <button
+              type="button"
               onClick={handleSave}
-              className="btn-success text-sm sm:text-xs px-3 py-2 sm:px-1.5 sm:py-0.5 h-11 sm:h-auto min-w-[44px] sm:min-w-0"
+              className="btn-success text-sm px-2 py-1.5 h-9 min-w-[36px] rounded-lg flex items-center justify-center"
             >
               ✓
             </button>
             <button
+              type="button"
               onClick={handleCancel}
-              className="btn-secondary text-sm sm:text-xs px-3 py-2 sm:px-1.5 sm:py-0.5 h-11 sm:h-auto min-w-[44px] sm:min-w-0"
+              className="btn-secondary text-sm px-2 py-1.5 h-9 min-w-[36px] rounded-lg flex items-center justify-center"
             >
               ✕
             </button>
@@ -439,35 +452,90 @@ function ExpenseRow({ expense, bucketConfigs, categories, defaultCategoryId, onU
 
   return (
     <div 
-      className="px-2 py-1 bg-white rounded-lg border border-accent-200 hover:border-primary-300 hover:shadow-soft flex items-center group text-xs transition-all duration-200 relative"
+      className="px-2 py-1.5 sm:py-1 bg-white rounded-lg border border-accent-200 hover:border-primary-300 hover:shadow-soft flex items-center gap-2 group text-xs transition-all duration-200"
     >
-      <div className="flex items-center gap-2 flex-1 min-w-0 w-full">
+      {/* Content */}
+      <div className="flex items-center gap-2 flex-1 min-w-0 pr-1 sm:pr-0">
         {expenseCategory?.color && (
           <div
             className="w-2 h-2 rounded-full flex-shrink-0"
             style={{ backgroundColor: expenseCategory.color }}
           />
         )}
-        <div className="font-medium truncate text-accent-800 flex-1">{expense.name}</div>
+        <div className="font-medium truncate text-accent-800 flex-1 min-w-0">{expense.name}</div>
         <div className="text-primary-600 font-semibold whitespace-nowrap flex-shrink-0">{formatCurrency(expense.amount)}</div>
       </div>
-      {/* Edit/Delete buttons - visible on mobile, hover on desktop */}
-      <div className="absolute right-2 top-1/2 -translate-y-1/2 flex gap-2 sm:gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-200 bg-white/95 backdrop-blur-sm px-1 py-0.5 rounded shadow-sm">
+      {/* Edit/Delete: small icon buttons, same size on mobile and desktop */}
+      <div className="flex gap-1 flex-shrink-0 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-200">
         <button
+          type="button"
           onClick={() => setIsEditing(true)}
-          className="px-3 py-2 sm:px-1.5 sm:py-0.5 text-sm sm:text-xs bg-primary-400 text-white rounded-lg hover:bg-primary-500 active:scale-95 transition-all duration-200 min-h-[44px] sm:min-h-0 min-w-[44px] sm:min-w-0 flex items-center justify-center"
+          className="p-1.5 flex items-center justify-center bg-primary-400 text-white rounded-md hover:bg-primary-500 active:scale-95 transition-all duration-200 touch-manipulation"
           title="Edit"
+          aria-label="Edit expense"
         >
-          ✎
+          <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+          </svg>
         </button>
         <button
-          onClick={() => onDelete(expense.id)}
-          className="btn-danger text-sm sm:text-xs px-3 py-2 sm:px-1.5 sm:py-0.5 min-h-[44px] sm:min-h-0 min-w-[44px] sm:min-w-0 flex items-center justify-center"
+          type="button"
+          onClick={() => setShowDeleteConfirm(true)}
+          className="p-1.5 flex items-center justify-center rounded-md bg-red-500 text-white hover:bg-red-600 active:scale-95 transition-all duration-200 touch-manipulation"
           title="Delete"
+          aria-label="Delete expense"
         >
-          ×
+          <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
         </button>
       </div>
+
+      {/* Delete confirmation modal */}
+      {showDeleteConfirm && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 animate-fade-in"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="delete-expense-title"
+          onClick={() => setShowDeleteConfirm(false)}
+        >
+          <div
+            className="bg-white rounded-xl shadow-lg border border-accent-200 p-4 sm:p-5 w-full max-w-sm animate-scale-in"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 id="delete-expense-title" className="text-lg font-bold text-accent-900 mb-1">
+              {t('overview.deleteExpenseConfirmTitle')}
+            </h3>
+            <p className="text-sm text-accent-600 mb-3">
+              {t('overview.deleteExpenseConfirmMessage')}
+            </p>
+            <div className="bg-accent-50 rounded-lg px-3 py-2 mb-4">
+              <p className="font-medium text-accent-900 truncate">{expense.name}</p>
+              <p className="text-sm text-primary-600 font-semibold">{formatCurrency(expense.amount)}</p>
+            </div>
+            <div className="flex gap-2 justify-end">
+              <button
+                type="button"
+                onClick={() => setShowDeleteConfirm(false)}
+                className="btn-secondary text-sm px-4 py-2"
+              >
+                {t('common.cancel')}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  onDelete(expense.id);
+                  setShowDeleteConfirm(false);
+                }}
+                className="px-4 py-2 text-sm font-medium rounded-lg bg-red-500 text-white hover:bg-red-600 active:scale-95 transition-all"
+              >
+                {t('common.delete')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

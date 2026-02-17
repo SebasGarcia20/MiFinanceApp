@@ -1,13 +1,16 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import Link from 'next/link';
 import { getCurrentPeriod, PeriodFormat } from '@/lib/date';
 import { calculateSummary } from '@/lib/summary';
 import { useMonthData } from '@/hooks/useMonthData';
 import { useSavingsData } from '@/hooks/useSavingsData';
+import { useDebtsData } from '@/hooks/useDebtsData';
 import { useCategories } from '@/hooks/useCategories';
 import { useSettings } from '@/hooks/useSettings';
 import { useTranslation } from '@/hooks/useTranslation';
+import { formatCurrency } from '@/lib/currency';
 import type { ExpenseBucket } from '@/types';
 import Sidebar from '@/components/Sidebar';
 import PeriodSelector from '@/components/PeriodSelector';
@@ -63,6 +66,7 @@ export default function OverviewPage() {
   } = useMonthData(period);
 
   const { goals: savingsGoals, contributions: savingsContributions, addContribution } = useSavingsData();
+  const { debts, isLoading: isLoadingDebts } = useDebtsData();
   const { categories, defaultCategoryId, isLoading: isLoadingCategories } = useCategories();
   const [previousMonthExpenses, setPreviousMonthExpenses] = useState<Partial<Record<ExpenseBucket, number>>>({});
   const [previousExpensesLoadedForPeriod, setPreviousExpensesLoadedForPeriod] = useState<PeriodFormat | null>(null);
@@ -124,7 +128,11 @@ export default function OverviewPage() {
     setShowOnboarding(false);
   };
 
-  const summary = calculateSummary(data, bucketConfigs, savingsContributions);
+  const debtPaymentsThisPeriod = useMemo(() => {
+    return debts.flatMap((d) => d.payments || []).filter((p) => p.period === period).reduce((s, p) => s + p.amount, 0);
+  }, [debts, period]);
+
+  const summary = calculateSummary(data, bucketConfigs, savingsContributions, debtPaymentsThisPeriod);
 
   const handleSaveNow = (goalId: string, amount: number) => {
     addContribution({
@@ -171,8 +179,34 @@ export default function OverviewPage() {
 
           {/* Main Grid: Mobile 1-column, Desktop 2-column layout (30% left, 70% right) */}
           <div className="grid grid-cols-1 lg:grid-cols-[30%_1fr] gap-4 sm:gap-6">
-            {/* LEFT COLUMN: Bills and Summary stacked */}
+            {/* LEFT COLUMN: Debts, Bills, Summary stacked */}
             <div className="lg:col-span-1 space-y-6 order-3 lg:order-1">
+              {/* Debts section – first in left column so it's visible without scrolling */}
+              <section id="overview-debts" aria-label={t('overview.debtsCardTitle')} className="min-h-0">
+                <div className="card border-primary-200/60 bg-gradient-to-br from-white to-primary-50/20 min-h-[120px]">
+                  <div className="mb-2">
+                    <h2 className="text-xl font-bold text-accent-900">{t('overview.debtsCardTitle')}</h2>
+                    <div className="h-0.5 w-12 bg-primary-400 rounded-full mt-1" />
+                  </div>
+                  {isLoadingDebts ? (
+                    <div className="flex justify-between items-center text-sm mb-3">
+                      <span className="text-accent-500">{t('overview.paidToDebtsThisPeriod')}</span>
+                      <span className="h-5 w-16 bg-accent-100 rounded animate-pulse" />
+                    </div>
+                  ) : (
+                    <div className="flex justify-between items-center text-sm mb-3">
+                      <span className="text-accent-600">{t('overview.paidToDebtsThisPeriod')}</span>
+                      <span className="font-semibold text-accent-800">{formatCurrency(debtPaymentsThisPeriod)}</span>
+                    </div>
+                  )}
+                  <Link
+                    href="/debts"
+                    className="btn-primary w-full flex items-center justify-center gap-2 text-sm py-2"
+                  >
+                    {t('overview.addDebtPayment')}
+                  </Link>
+                </div>
+              </section>
               {isLoadingMonthData || initialLoad ? (
                 <div className="card">
                   {/* Loading progress bar */}
@@ -216,7 +250,7 @@ export default function OverviewPage() {
                   onAddBucketPayment={addBucketPayment}
                 />
               )}
-              <div className="order-5 lg:order-2">
+              <div className="order-6 lg:order-3">
                 {isLoadingMonthData || initialLoad ? (
                   <div className="card">
                     {/* Loading progress bar */}

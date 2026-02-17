@@ -3,6 +3,14 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTranslation } from '@/hooks/useTranslation';
+import {
+  NavIconOverview,
+  NavIconBuckets,
+  NavIconSavings,
+  NavIconDebts,
+  NavIconInsights,
+  NavIconSettings,
+} from './NavIcons';
 
 export default function BottomNav() {
   const { t } = useTranslation();
@@ -17,68 +25,12 @@ export default function BottomNav() {
 
   const iconClass = 'w-4 h-4 flex-shrink-0';
   const navItems = [
-    {
-      href: '/',
-      label: t('nav.overview'),
-      icon: (
-        <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-        </svg>
-      ),
-      isActive: isOverview,
-    },
-    {
-      href: '/buckets',
-      label: t('nav.buckets'),
-      icon: (
-        <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-        </svg>
-      ),
-      isActive: isBuckets,
-    },
-    {
-      href: '/savings',
-      label: t('nav.savings'),
-      icon: (
-        <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-      ),
-      isActive: isSavings,
-    },
-    {
-      href: '/debts',
-      label: t('nav.debts'),
-      icon: (
-        <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33" />
-        </svg>
-      ),
-      isActive: isDebts,
-    },
-    {
-      href: '/insights',
-      label: t('nav.insights'),
-      icon: (
-        <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-        </svg>
-      ),
-      isActive: isInsights,
-    },
-    {
-      href: '/settings',
-      label: t('nav.settings'),
-      icon: (
-        <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-        </svg>
-      ),
-      isActive: isSettings,
-    },
+    { href: '/', label: t('nav.overview'), icon: <NavIconOverview className={iconClass} />, isActive: isOverview },
+    { href: '/buckets', label: t('nav.buckets'), icon: <NavIconBuckets className={iconClass} />, isActive: isBuckets },
+    { href: '/savings', label: t('nav.savings'), icon: <NavIconSavings className={iconClass} />, isActive: isSavings },
+    { href: '/debts', label: t('nav.debts'), icon: <NavIconDebts className={iconClass} />, isActive: isDebts },
+    { href: '/insights', label: t('nav.insights'), icon: <NavIconInsights className={iconClass} />, isActive: isInsights },
+    { href: '/settings', label: t('nav.settings'), icon: <NavIconSettings className={iconClass} />, isActive: isSettings },
   ];
 
   return (

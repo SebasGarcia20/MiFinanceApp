@@ -100,6 +100,12 @@ export default function Summary({ summary, bucketConfigs, onUpdateLimit }: Summa
               <span className="font-semibold text-green-600">{formatCurrency(summary.paidFromPreviousPeriod)}</span>
             </div>
           )}
+          {summary.debtPaymentsThisPeriod > 0 && (
+            <div className="flex justify-between text-sm items-center">
+              <span className="text-accent-600">{t('overview.debtPaymentsThisPeriod')}</span>
+              <span className="font-semibold text-accent-800">{formatCurrency(summary.debtPaymentsThisPeriod)}</span>
+            </div>
+          )}
         </div>
 
         {/* Grand total */}

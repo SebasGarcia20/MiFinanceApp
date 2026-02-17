@@ -1,22 +1,29 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Sidebar from '@/components/Sidebar';
 import Debts from '@/components/Debts';
 import BottomNav from '@/components/BottomNav';
 import { useDebtsData } from '@/hooks/useDebtsData';
-import { getCurrentPeriod } from '@/lib/date';
+import { useSettings } from '@/hooks/useSettings';
+import { getCurrentPeriod, type PeriodFormat } from '@/lib/date';
 import { useTranslation } from '@/hooks/useTranslation';
 
 export default function DebtsPage() {
   const { t } = useTranslation();
-  const [period] = useState(() => {
-    if (typeof window === 'undefined') {
-      const now = new Date();
-      return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-15`;
-    }
-    return getCurrentPeriod();
+  const { settings } = useSettings();
+  const [period, setPeriod] = useState<PeriodFormat>(() => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = '01';
+    return `${year}-${month}-${day}` as PeriodFormat;
   });
+
+  useEffect(() => {
+    const startDay = settings.periodStartDay ?? 1;
+    setPeriod(getCurrentPeriod(startDay));
+  }, [settings.periodStartDay]);
 
   const { debts, isLoading, addDebt, updateDebt, deleteDebt, addPayment } = useDebtsData();
 

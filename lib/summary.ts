@@ -3,7 +3,8 @@ import { MonthData, MonthSummary, ExpenseBucket, FixedPayment, BucketConfig, Sav
 export function calculateSummary(
   data: MonthData & { fixedPayments?: FixedPayment[] },
   bucketConfigs: BucketConfig[],
-  savingsContributions?: SavingsContribution[]
+  savingsContributions?: SavingsContribution[],
+  debtPaymentsThisPeriod: number = 0
 ): MonthSummary {
   const paidFixedPayments = data.paidFixedPayments || [];
   const fixedPayments = data.fixedPayments || [];
@@ -36,8 +37,8 @@ export function calculateSummary(
 
   const expensesTotal = Object.values(expensesByBucket).reduce((sum, total) => sum + total, 0);
   
-  // Total = bucket expenses + recurring paid (bills) + paid from previous period (e.g. credit card payoff)
-  const grandTotal = expensesTotal + paidRecurringTotal + paidFromPreviousPeriod;
+  // Total = bucket expenses + recurring paid + paid from previous period + debt payments this period
+  const grandTotal = expensesTotal + paidRecurringTotal + paidFromPreviousPeriod + debtPaymentsThisPeriod;
   
   // Calculate total savings for current period
   // Savings reduce Money Left but do NOT count as expenses
@@ -58,6 +59,7 @@ export function calculateSummary(
     plannedRecurringTotal,
     paidRecurringTotal,
     paidFromPreviousPeriod,
+    debtPaymentsThisPeriod,
     remainingRecurringTotal,
     expensesByBucket,
     grandTotal,

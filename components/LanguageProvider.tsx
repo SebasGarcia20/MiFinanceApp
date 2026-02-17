@@ -16,14 +16,18 @@ export const LanguageContext = createContext<LanguageContextValue | null>(null);
 
 interface LanguageProviderProps {
   children: ReactNode;
+  /** Initial language from server (e.g. cookie) so hydration matches */
+  initialLanguage?: Language;
 }
 
-export function LanguageProvider({ children }: LanguageProviderProps) {
+export const LANGUAGE_COOKIE = 'app-language';
+
+export function LanguageProvider({ children, initialLanguage }: LanguageProviderProps) {
   const { data: session } = useSession();
-  const [language, setLanguageState] = useState<Language>('es');
+  const [language, setLanguageState] = useState<Language>(initialLanguage ?? 'es');
   const [isLoading, setIsLoading] = useState(true);
 
-  // Load language preference from API
+  // Load language from API after mount; keep in sync with initialLanguage from server
   useEffect(() => {
     async function loadLanguage() {
       if (!session?.user?.id) {
@@ -36,11 +40,12 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
         if (response.ok) {
           const data = await response.json();
           const lang = (data.language || 'es') as Language;
-          setLanguageState(lang === 'en' ? 'en' : 'es');
+          const next = lang === 'en' ? 'en' : 'es';
+          setLanguageState(next);
+          document.cookie = `${LANGUAGE_COOKIE}=${next};path=/;max-age=31536000`;
         }
       } catch (error) {
         console.error('Error loading language:', error);
-        // Default to Spanish
         setLanguageState('es');
       } finally {
         setIsLoading(false);
@@ -52,8 +57,9 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
 
   const setLanguage = useCallback(async (lang: Language) => {
     setLanguageState(lang);
-    
-    // Save to API
+    if (typeof document !== 'undefined') {
+      document.cookie = `${LANGUAGE_COOKIE}=${lang};path=/;max-age=31536000`;
+    }
     if (session?.user?.id) {
       try {
         await fetch('/api/settings', {

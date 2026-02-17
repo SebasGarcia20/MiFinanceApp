@@ -3,14 +3,20 @@
 import { SessionProvider } from 'next-auth/react';
 import { SettingsProvider } from '@/components/SettingsProvider';
 import { LanguageProvider } from '@/components/LanguageProvider';
+import type { Language } from '@/lib/translations';
 
-export default function Providers({ children }: { children: React.ReactNode }) {
+interface ProvidersProps {
+  children: React.ReactNode;
+  initialLanguage?: Language;
+}
+
+export default function Providers({ children, initialLanguage }: ProvidersProps) {
   return (
     <SessionProvider
       refetchInterval={0}
       refetchOnWindowFocus={false}
     >
-      <LanguageProvider>
+      <LanguageProvider initialLanguage={initialLanguage}>
         <SettingsProvider>
           {children}
         </SettingsProvider>
