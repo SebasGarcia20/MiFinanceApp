@@ -86,6 +86,18 @@ export function useDebtsData() {
     return payment;
   }, []);
 
+  const deletePayment = useCallback(async (debtId: string, paymentId: string) => {
+    const res = await fetch(`/api/debts/${debtId}/payments/${paymentId}`, { method: 'DELETE' });
+    if (!res.ok) throw new Error('Failed to delete payment');
+    setDebts((prev) =>
+      prev.map((d) => {
+        if (d.id !== debtId) return d;
+        const payments = (d.payments || []).filter((p) => p.id !== paymentId);
+        return { ...d, payments };
+      })
+    );
+  }, []);
+
   return {
     debts,
     isLoading,
@@ -95,5 +107,6 @@ export function useDebtsData() {
     updateDebt,
     deleteDebt,
     addPayment,
+    deletePayment,
   };
 }

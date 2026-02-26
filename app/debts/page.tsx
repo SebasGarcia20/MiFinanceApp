@@ -25,7 +25,7 @@ export default function DebtsPage() {
     setPeriod(getCurrentPeriod(startDay));
   }, [settings.periodStartDay]);
 
-  const { debts, isLoading, addDebt, updateDebt, deleteDebt, addPayment } = useDebtsData();
+  const { debts, isLoading, addDebt, updateDebt, deleteDebt, addPayment, deletePayment } = useDebtsData();
 
   return (
     <div className="flex min-h-screen bg-accent-50">
@@ -48,6 +48,7 @@ export default function DebtsPage() {
               onUpdateDebt={updateDebt}
               onDeleteDebt={deleteDebt}
               onAddPayment={addPayment}
+              onDeletePayment={deletePayment}
             />
           )}
         </div>

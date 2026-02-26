@@ -195,6 +195,7 @@ export interface Translations {
 
   // Savings Page
   savings: {
+    subtitle: string;
     addNewGoal: string;
     goalName: string;
     goalNamePlaceholder: string;
@@ -210,6 +211,8 @@ export interface Translations {
     totalSaved: string;
     progress: string;
     remaining: string;
+    contributions: string;
+    removeContribution: string;
   };
 
   // Debts Page
@@ -229,6 +232,8 @@ export interface Translations {
     addPayment: string;
     amountPaid: string;
     paidOff: string;
+    payments: string;
+    removePayment: string;
   };
 
   // Onboarding
@@ -488,6 +493,7 @@ const translations: Record<Language, Translations> = {
       totalSpending: 'Gasto Total:',
     },
     savings: {
+      subtitle: 'Lleva el progreso hacia tus metas de ahorro.',
       addNewGoal: 'Agregar Nueva Meta',
       goalName: 'Nombre de la meta',
       goalNamePlaceholder: 'ej., Apto, Viaje',
@@ -503,6 +509,8 @@ const translations: Record<Language, Translations> = {
       totalSaved: 'Total ahorrado:',
       progress: 'Progreso',
       remaining: 'Restante:',
+      contributions: 'Contribuciones',
+      removeContribution: 'Quitar contribución',
     },
     debts: {
       title: 'Deudas',
@@ -520,6 +528,8 @@ const translations: Record<Language, Translations> = {
       addPayment: 'Registrar pago',
       amountPaid: 'Monto del pago',
       paidOff: '¡Pagada!',
+      payments: 'Pagos',
+      removePayment: 'Quitar pago',
     },
     onboarding: {
       welcome: '¡Bienvenido a Flowly!',
@@ -765,6 +775,7 @@ const translations: Record<Language, Translations> = {
       totalSpending: 'Total Spending:',
     },
     savings: {
+      subtitle: 'Track your progress toward your savings goals.',
       addNewGoal: 'Add New Goal',
       goalName: 'Goal name',
       goalNamePlaceholder: 'e.g., Apto, Trip',
@@ -780,6 +791,8 @@ const translations: Record<Language, Translations> = {
       totalSaved: 'Total saved:',
       progress: 'Progress',
       remaining: 'Remaining:',
+      contributions: 'Contributions',
+      removeContribution: 'Remove contribution',
     },
     debts: {
       title: 'Debts',
@@ -797,6 +810,8 @@ const translations: Record<Language, Translations> = {
       addPayment: 'Add payment',
       amountPaid: 'Payment amount',
       paidOff: 'Paid off!',
+      payments: 'Payments',
+      removePayment: 'Remove payment',
     },
     onboarding: {
       welcome: 'Welcome to Flowly!',

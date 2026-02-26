@@ -380,6 +380,14 @@ export async function createDebtPayment(userId: string, data: {
   });
 }
 
+export async function deleteDebtPayment(userId: string, debtId: string, paymentId: string) {
+  const payment = await prisma.debtPayment.findFirst({
+    where: { id: paymentId, debtId, userId },
+  });
+  if (!payment) throw new Error('Payment not found or access denied');
+  await prisma.debtPayment.delete({ where: { id: paymentId } });
+}
+
 // User Settings
 export async function getUserSettings(userId: string) {
   return await prisma.userSettings.findUnique({

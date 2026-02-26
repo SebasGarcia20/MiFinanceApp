@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { SavingsGoal, SavingsContribution } from '@/types';
-import { formatCurrency, parseCurrencyInput } from '@/lib/currency';
+import { formatCurrency, formatCurrencyInput, parseCurrencyInput } from '@/lib/currency';
 import { useTranslation } from '@/hooks/useTranslation';
 
 interface SavingsProps {
@@ -34,6 +34,11 @@ export default function Savings({
   const [isMounted, setIsMounted] = useState(false);
   const [addingToGoal, setAddingToGoal] = useState<string | null>(null);
   const [addAmount, setAddAmount] = useState('');
+  const [editingNameFor, setEditingNameFor] = useState<string | null>(null);
+  const [editNameValue, setEditNameValue] = useState('');
+  const [editingTargetFor, setEditingTargetFor] = useState<string | null>(null);
+  const [editTargetValue, setEditTargetValue] = useState('');
+  const [editMonthlyValue, setEditMonthlyValue] = useState('');
   const targetRef = useRef<HTMLInputElement>(null);
   const monthlyRef = useRef<HTMLInputElement>(null);
 
@@ -77,6 +82,37 @@ export default function Savings({
 
     setAddAmount('');
     setAddingToGoal(null);
+  };
+
+  const handleUpdateName = async (goalId: string) => {
+    const name = editNameValue.trim();
+    if (!name) return;
+    try {
+      await onUpdateGoal(goalId, { name });
+      setEditNameValue('');
+      setEditingNameFor(null);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleUpdateTarget = async (goalId: string) => {
+    const target = parseCurrencyInput(editTargetValue);
+    if (target <= 0) return;
+    const monthlyTarget = editMonthlyValue.trim()
+      ? parseCurrencyInput(editMonthlyValue)
+      : undefined;
+    try {
+      await onUpdateGoal(goalId, {
+        targetAmount: target,
+        monthlyTarget: monthlyTarget && monthlyTarget > 0 ? monthlyTarget : undefined,
+      });
+      setEditTargetValue('');
+      setEditMonthlyValue('');
+      setEditingTargetFor(null);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const sortedGoals = [...goals].sort((a, b) => a.order - b.order);
@@ -181,18 +217,135 @@ export default function Savings({
             const remaining = Math.max(0, goal.targetAmount - totalSaved);
             const progress = goal.targetAmount > 0 ? (totalSaved / goal.targetAmount) * 100 : 0;
             const isAdding = addingToGoal === goal.id;
+            const isEditingName = editingNameFor === goal.id;
+            const isEditingTarget = editingTargetFor === goal.id;
 
             return (
               <div key={goal.id} className="card p-4 sm:p-6">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4 mb-4">
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-lg sm:text-xl font-bold text-accent-900 mb-1">{goal.name}</h3>
-                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-accent-600">
-                      <span>{t('savings.target')} <span className="font-semibold text-accent-800">{formatCurrency(goal.targetAmount)}</span></span>
-                      {goal.monthlyTarget && (
-                        <span>{t('savings.monthly')} <span className="font-semibold text-accent-800">{formatCurrency(goal.monthlyTarget)}</span></span>
-                      )}
-                    </div>
+                    {isEditingName ? (
+                      <div className="space-y-2 mb-2">
+                        <label className="block text-xs font-medium text-accent-700">{t('savings.goalName')}</label>
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            placeholder={t('savings.goalNamePlaceholder')}
+                            value={editNameValue}
+                            onChange={(e) => setEditNameValue(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') handleUpdateName(goal.id);
+                              if (e.key === 'Escape') { setEditingNameFor(null); setEditNameValue(''); }
+                            }}
+                            className="input-field flex-1 text-base sm:text-sm"
+                            autoFocus
+                          />
+                          <button onClick={() => handleUpdateName(goal.id)} className="btn-success flex-shrink-0">
+                            {t('common.save')}
+                          </button>
+                          <button
+                            onClick={() => { setEditingNameFor(null); setEditNameValue(''); }}
+                            className="btn-secondary flex-shrink-0"
+                          >
+                            {t('common.cancel')}
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <h3 className="text-lg sm:text-xl font-bold text-accent-900 mb-1 flex items-center gap-2">
+                        {goal.name}
+                        <button
+                          onClick={() => {
+                            setEditingNameFor(goal.id);
+                            setEditNameValue(goal.name);
+                            setAddingToGoal(null);
+                            setAddAmount('');
+                          }}
+                          className="p-1 rounded hover:bg-accent-100 text-accent-500 hover:text-accent-700 transition-colors"
+                          title={t('common.edit')}
+                          aria-label={t('common.edit')}
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                          </svg>
+                        </button>
+                      </h3>
+                    )}
+                    {isEditingTarget ? (
+                      <div className="space-y-2 mt-2">
+                        <div>
+                          <label className="block text-xs font-medium text-accent-700 mb-1">{t('savings.targetAmount')}</label>
+                          <input
+                            type="text"
+                            placeholder={t('savings.amountPlaceholder')}
+                            value={editTargetValue}
+                            onChange={(e) => setEditTargetValue(e.target.value)}
+                            className="input-field w-full text-base sm:text-sm"
+                            autoFocus
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-accent-700 mb-1">{t('savings.monthlyTarget')}</label>
+                          <input
+                            type="text"
+                            placeholder={t('savings.amountPlaceholder')}
+                            value={editMonthlyValue}
+                            onChange={(e) => setEditMonthlyValue(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') handleUpdateTarget(goal.id);
+                              if (e.key === 'Escape') {
+                                setEditingTargetFor(null);
+                                setEditTargetValue('');
+                                setEditMonthlyValue('');
+                              }
+                            }}
+                            className="input-field w-full text-base sm:text-sm"
+                          />
+                        </div>
+                        <div className="flex gap-2">
+                          <button onClick={() => handleUpdateTarget(goal.id)} className="btn-success flex-shrink-0">
+                            {t('common.save')}
+                          </button>
+                          <button
+                            onClick={() => {
+                              setEditingTargetFor(null);
+                              setEditTargetValue('');
+                              setEditMonthlyValue('');
+                            }}
+                            className="btn-secondary flex-shrink-0"
+                          >
+                            {t('common.cancel')}
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-accent-600 mt-1">
+                        <span className="flex items-center gap-1.5">
+                          {t('savings.target')} <span className="font-semibold text-accent-800">{formatCurrency(goal.targetAmount)}</span>
+                          <button
+                            onClick={() => {
+                              setEditingTargetFor(goal.id);
+                              setEditTargetValue(formatCurrencyInput(goal.targetAmount));
+                              setEditMonthlyValue(goal.monthlyTarget ? formatCurrencyInput(goal.monthlyTarget) : '');
+                              setEditingNameFor(null);
+                              setEditNameValue('');
+                              setAddingToGoal(null);
+                              setAddAmount('');
+                            }}
+                            className="p-1 rounded hover:bg-accent-100 text-accent-500 hover:text-accent-700 transition-colors"
+                            title={t('common.edit')}
+                            aria-label={t('common.edit')}
+                          >
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                            </svg>
+                          </button>
+                        </span>
+                        {goal.monthlyTarget && (
+                          <span>{t('savings.monthly')} <span className="font-semibold text-accent-800">{formatCurrency(goal.monthlyTarget)}</span></span>
+                        )}
+                      </div>
+                    )}
                   </div>
                   <div className="flex gap-2 flex-shrink-0">
                     <button
@@ -203,6 +356,11 @@ export default function Savings({
                         } else {
                           setAddingToGoal(goal.id);
                           setAddAmount('');
+                          setEditingNameFor(null);
+                          setEditNameValue('');
+                          setEditingTargetFor(null);
+                          setEditTargetValue('');
+                          setEditMonthlyValue('');
                         }
                       }}
                       className="flex-1 sm:flex-initial min-h-[44px] sm:min-h-0 px-4 py-2.5 sm:px-3 sm:py-1.5 text-sm sm:text-xs font-medium bg-primary-400 text-white rounded-lg hover:bg-primary-500 active:scale-95 transition-all duration-200"
@@ -252,6 +410,38 @@ export default function Savings({
                     <span className="text-sm text-accent-600">{t('savings.totalSaved')}</span>
                     <span className="text-base sm:text-lg font-bold text-primary-600">{formatCurrency(totalSaved)}</span>
                   </div>
+
+                  {goalContributions.length > 0 && (
+                    <div className="space-y-1.5">
+                      <span className="text-xs font-medium text-accent-500">{t('savings.contributions')}</span>
+                      <ul className="space-y-1">
+                        {goalContributions.map((c) => (
+                          <li
+                            key={c.id}
+                            className="flex items-center justify-between gap-2 py-1.5 px-2 rounded-lg bg-accent-50"
+                          >
+                            <span className="text-sm text-accent-700">
+                              {formatCurrency(c.amount)}
+                              <span className="text-accent-500 ml-1 text-xs">
+                                {c.date}
+                                {c.period ? ` · ${c.period}` : ''}
+                              </span>
+                            </span>
+                            <button
+                              onClick={() => onDeleteContribution(c.id)}
+                              className="p-1.5 rounded text-accent-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                              title={t('savings.removeContribution')}
+                              aria-label={t('savings.removeContribution')}
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
 
                   <div>
                     <div className="flex justify-between items-center mb-1">

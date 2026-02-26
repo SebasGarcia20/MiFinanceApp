@@ -1,111 +1,123 @@
+'use client';
+
 import { useState, useEffect, useCallback } from 'react';
 import { SavingsGoal, SavingsContribution } from '@/types';
-
-const SAVINGS_GOALS_KEY = 'savingsGoals';
-const SAVINGS_CONTRIBUTIONS_KEY = 'savingsContributions';
-
-function loadSavingsGoals(): SavingsGoal[] {
-  if (typeof window === 'undefined') return [];
-  
-  const stored = localStorage.getItem(SAVINGS_GOALS_KEY);
-  if (!stored) return [];
-  
-  try {
-    return JSON.parse(stored) as SavingsGoal[];
-  } catch {
-    return [];
-  }
-}
-
-function saveSavingsGoals(goals: SavingsGoal[]): void {
-  if (typeof window === 'undefined') return;
-  localStorage.setItem(SAVINGS_GOALS_KEY, JSON.stringify(goals));
-}
-
-function loadSavingsContributions(): SavingsContribution[] {
-  if (typeof window === 'undefined') return [];
-  
-  const stored = localStorage.getItem(SAVINGS_CONTRIBUTIONS_KEY);
-  if (!stored) return [];
-  
-  try {
-    return JSON.parse(stored) as SavingsContribution[];
-  } catch {
-    return [];
-  }
-}
-
-function saveSavingsContributions(contributions: SavingsContribution[]): void {
-  if (typeof window === 'undefined') return;
-  localStorage.setItem(SAVINGS_CONTRIBUTIONS_KEY, JSON.stringify(contributions));
-}
 
 export function useSavingsData() {
   const [goals, setGoals] = useState<SavingsGoal[]>([]);
   const [contributions, setContributions] = useState<SavingsContribution[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchGoals = useCallback(async () => {
+    try {
+      const res = await fetch('/api/savings/goals', { cache: 'no-store' });
+      if (!res.ok) {
+        if (res.status === 401) throw new Error('Unauthorized');
+        throw new Error('Failed to fetch savings goals');
+      }
+      const data = await res.json();
+      setGoals(data);
+    } catch (err: any) {
+      setError(err.message || 'Failed to load savings goals');
+      setGoals([]);
+    }
+  }, []);
+
+  const fetchContributions = useCallback(async () => {
+    try {
+      const res = await fetch('/api/savings/contributions', { cache: 'no-store' });
+      if (!res.ok) {
+        if (res.status === 401) throw new Error('Unauthorized');
+        throw new Error('Failed to fetch savings contributions');
+      }
+      const data = await res.json();
+      setContributions(data);
+    } catch (err: any) {
+      setError(err.message || 'Failed to load savings contributions');
+      setContributions([]);
+    }
+  }, []);
+
+  const fetchAll = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+    await Promise.all([fetchGoals(), fetchContributions()]);
+    setIsLoading(false);
+  }, [fetchGoals, fetchContributions]);
 
   useEffect(() => {
-    setGoals(loadSavingsGoals());
-    setContributions(loadSavingsContributions());
+    fetchAll();
+  }, [fetchAll]);
+
+  const addGoal = useCallback(
+    async (goalData: Omit<SavingsGoal, 'id' | 'order'>) => {
+      const res = await fetch('/api/savings/goals', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: goalData.name,
+          targetAmount: goalData.targetAmount,
+          monthlyTarget: goalData.monthlyTarget,
+          order: goals.length,
+        }),
+      });
+      if (!res.ok) throw new Error('Failed to create savings goal');
+      const newGoal = await res.json();
+      setGoals((prev) => [...prev, newGoal]);
+    },
+    [goals.length]
+  );
+
+  const updateGoal = useCallback(
+    async (id: string, updates: Partial<SavingsGoal>) => {
+      const res = await fetch(`/api/savings/goals/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates),
+      });
+      if (!res.ok) throw new Error('Failed to update savings goal');
+      const updated = await res.json();
+      setGoals((prev) => prev.map((g) => (g.id === id ? updated : g)));
+    },
+    []
+  );
+
+  const deleteGoal = useCallback(async (id: string) => {
+    const res = await fetch(`/api/savings/goals/${id}`, { method: 'DELETE' });
+    if (!res.ok) throw new Error('Failed to delete savings goal');
+    setGoals((prev) => prev.filter((g) => g.id !== id));
+    setContributions((prev) => prev.filter((c) => c.goalId !== id));
   }, []);
 
-  const addGoal = useCallback((goalData: Omit<SavingsGoal, 'id' | 'order'>) => {
-    setGoals(prev => {
-      const newGoal: SavingsGoal = {
-        ...goalData,
-        id: `goal-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-        order: prev.length,
-      };
-      const updated = [...prev, newGoal];
-      saveSavingsGoals(updated);
-      return updated;
-    });
-  }, []);
+  const addContribution = useCallback(
+    async (contributionData: Omit<SavingsContribution, 'id'>) => {
+      const res = await fetch('/api/savings/contributions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(contributionData),
+      });
+      if (!res.ok) throw new Error('Failed to add contribution');
+      const newContribution = await res.json();
+      setContributions((prev) => [...prev, newContribution]);
+    },
+    []
+  );
 
-  const updateGoal = useCallback((id: string, updates: Partial<SavingsGoal>) => {
-    setGoals(prev => {
-      const updated = prev.map(g => g.id === id ? { ...g, ...updates } : g);
-      saveSavingsGoals(updated);
-      return updated;
+  const deleteContribution = useCallback(async (id: string) => {
+    const res = await fetch(`/api/savings/contributions/${id}`, {
+      method: 'DELETE',
     });
-  }, []);
-
-  const deleteGoal = useCallback((id: string) => {
-    setGoals(prev => {
-      const updated = prev.filter(g => g.id !== id);
-      saveSavingsGoals(updated);
-      return updated;
-    });
-    setContributions(prev => {
-      const updated = prev.filter(c => c.goalId !== id);
-      saveSavingsContributions(updated);
-      return updated;
-    });
-  }, []);
-
-  const addContribution = useCallback((contributionData: Omit<SavingsContribution, 'id'>) => {
-    const newContribution: SavingsContribution = {
-      ...contributionData,
-      id: `contribution-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-    };
-    setContributions(prev => {
-      const updated = [...prev, newContribution];
-      saveSavingsContributions(updated);
-      return updated;
-    });
-  }, []);
-
-  const deleteContribution = useCallback((id: string) => {
-    setContributions(prev => {
-      const updated = prev.filter(c => c.id !== id);
-      saveSavingsContributions(updated);
-      return updated;
-    });
+    if (!res.ok) throw new Error('Failed to delete contribution');
+    setContributions((prev) => prev.filter((c) => c.id !== id));
   }, []);
 
   return {
     goals,
     contributions,
+    isLoading,
+    error,
+    refetch: fetchAll,
     addGoal,
     updateGoal,
     deleteGoal,

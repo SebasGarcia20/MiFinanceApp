@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { Debt } from '@/types';
-import { formatCurrency, parseCurrencyInput } from '@/lib/currency';
+import { formatCurrency, formatCurrencyInput, parseCurrencyInput } from '@/lib/currency';
 import { useTranslation } from '@/hooks/useTranslation';
 
 interface DebtsProps {
@@ -12,6 +12,7 @@ interface DebtsProps {
   onUpdateDebt: (id: string, updates: Partial<Pick<Debt, 'name' | 'totalAmount'>>) => Promise<Debt>;
   onDeleteDebt: (id: string) => Promise<void>;
   onAddPayment: (debtId: string, amount: number, period?: string) => Promise<unknown>;
+  onDeletePayment: (debtId: string, paymentId: string) => Promise<void>;
 }
 
 export default function Debts({
@@ -21,6 +22,7 @@ export default function Debts({
   onUpdateDebt,
   onDeleteDebt,
   onAddPayment,
+  onDeletePayment,
 }: DebtsProps) {
   const { t } = useTranslation();
   const [isAddingDebt, setIsAddingDebt] = useState(false);
@@ -28,6 +30,10 @@ export default function Debts({
   const [newTotal, setNewTotal] = useState('');
   const [addingPaymentFor, setAddingPaymentFor] = useState<string | null>(null);
   const [paymentAmount, setPaymentAmount] = useState('');
+  const [editingTotalFor, setEditingTotalFor] = useState<string | null>(null);
+  const [editTotalValue, setEditTotalValue] = useState('');
+  const [editingNameFor, setEditingNameFor] = useState<string | null>(null);
+  const [editNameValue, setEditNameValue] = useState('');
   const [isMounted, setIsMounted] = useState(false);
   const nameRef = useRef<HTMLInputElement>(null);
   const totalRef = useRef<HTMLInputElement>(null);
@@ -57,6 +63,30 @@ export default function Debts({
       await onAddPayment(debtId, amount, currentPeriod);
       setPaymentAmount('');
       setAddingPaymentFor(null);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleUpdateTotal = async (debtId: string) => {
+    const total = parseCurrencyInput(editTotalValue);
+    if (total <= 0) return;
+    try {
+      await onUpdateDebt(debtId, { totalAmount: total });
+      setEditTotalValue('');
+      setEditingTotalFor(null);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleUpdateName = async (debtId: string) => {
+    const name = editNameValue.trim();
+    if (!name) return;
+    try {
+      await onUpdateDebt(debtId, { name });
+      setEditNameValue('');
+      setEditingNameFor(null);
     } catch (err) {
       console.error(err);
     }
@@ -132,15 +162,111 @@ export default function Debts({
             const progress = debt.totalAmount > 0 ? (totalPaid / debt.totalAmount) * 100 : 0;
             const isPaidOff = remaining === 0;
             const isAdding = addingPaymentFor === debt.id;
+            const isEditingTotal = editingTotalFor === debt.id;
+            const isEditingName = editingNameFor === debt.id;
 
             return (
               <div key={debt.id} className="card p-4 sm:p-6">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4 mb-4">
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-lg sm:text-xl font-bold text-accent-900 mb-1">{debt.name}</h3>
-                    <p className="text-sm text-accent-600">
-                      {t('debts.totalAmount')}: <span className="font-semibold text-accent-800">{formatCurrency(debt.totalAmount)}</span>
-                    </p>
+                    {isEditingName ? (
+                      <div className="space-y-2 mb-2">
+                        <label className="block text-xs font-medium text-accent-700">{t('debts.debtName')}</label>
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            placeholder={t('debts.debtNamePlaceholder')}
+                            value={editNameValue}
+                            onChange={(e) => setEditNameValue(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') handleUpdateName(debt.id);
+                              if (e.key === 'Escape') { setEditingNameFor(null); setEditNameValue(''); }
+                            }}
+                            className="input-field flex-1 text-base sm:text-sm"
+                            autoFocus
+                          />
+                          <button onClick={() => handleUpdateName(debt.id)} className="btn-success flex-shrink-0">
+                            {t('common.save')}
+                          </button>
+                          <button
+                            onClick={() => { setEditingNameFor(null); setEditNameValue(''); }}
+                            className="btn-secondary flex-shrink-0"
+                          >
+                            {t('common.cancel')}
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <h3 className="text-lg sm:text-xl font-bold text-accent-900 mb-1 flex items-center gap-2">
+                        {debt.name}
+                        <button
+                          onClick={() => {
+                            setEditingNameFor(debt.id);
+                            setEditNameValue(debt.name);
+                            setEditingTotalFor(null);
+                            setEditTotalValue('');
+                            setAddingPaymentFor(null);
+                            setPaymentAmount('');
+                          }}
+                          className="p-1 rounded hover:bg-accent-100 text-accent-500 hover:text-accent-700 transition-colors"
+                          title={t('common.edit')}
+                          aria-label={t('common.edit')}
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                          </svg>
+                        </button>
+                      </h3>
+                    )}
+                    {isEditingTotal ? (
+                      <div className="space-y-2">
+                        <label className="block text-xs font-medium text-accent-700">{t('debts.totalAmount')}</label>
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            placeholder={t('debts.amountPlaceholder')}
+                            value={editTotalValue}
+                            onChange={(e) => setEditTotalValue(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') handleUpdateTotal(debt.id);
+                              if (e.key === 'Escape') { setEditingTotalFor(null); setEditTotalValue(''); }
+                            }}
+                            className="input-field flex-1 text-base sm:text-sm"
+                            autoFocus
+                          />
+                          <button onClick={() => handleUpdateTotal(debt.id)} className="btn-success flex-shrink-0">
+                            {t('common.save')}
+                          </button>
+                          <button
+                            onClick={() => { setEditingTotalFor(null); setEditTotalValue(''); }}
+                            className="btn-secondary flex-shrink-0"
+                          >
+                            {t('common.cancel')}
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="text-sm text-accent-600 flex items-center gap-2">
+                        {t('debts.totalAmount')}: <span className="font-semibold text-accent-800">{formatCurrency(debt.totalAmount)}</span>
+                        <button
+                          onClick={() => {
+                            setEditingTotalFor(debt.id);
+                            setEditTotalValue(formatCurrencyInput(debt.totalAmount));
+                            setAddingPaymentFor(null);
+                            setPaymentAmount('');
+                            setEditingNameFor(null);
+                            setEditNameValue('');
+                          }}
+                          className="p-1 rounded hover:bg-accent-100 text-accent-500 hover:text-accent-700 transition-colors"
+                          title={t('common.edit')}
+                          aria-label={t('common.edit')}
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                          </svg>
+                        </button>
+                      </p>
+                    )}
                   </div>
                   <div className="flex gap-2 flex-shrink-0">
                     {!isPaidOff && (
@@ -152,6 +278,10 @@ export default function Debts({
                           } else {
                             setAddingPaymentFor(debt.id);
                             setPaymentAmount('');
+                            setEditingTotalFor(null);
+                            setEditTotalValue('');
+                            setEditingNameFor(null);
+                            setEditNameValue('');
                           }
                         }}
                         className="flex-1 sm:flex-initial min-h-[44px] sm:min-h-0 px-4 py-2.5 sm:px-3 sm:py-1.5 text-sm sm:text-xs font-medium bg-primary-400 text-white rounded-lg hover:bg-primary-500 active:scale-95 transition-all duration-200"
@@ -196,6 +326,38 @@ export default function Debts({
                     <span className="text-sm text-accent-600">{t('debts.totalPaid')}</span>
                     <span className="text-base sm:text-lg font-bold text-primary-600">{formatCurrency(totalPaid)}</span>
                   </div>
+
+                  {payments.length > 0 && (
+                    <div className="space-y-1.5">
+                      <span className="text-xs font-medium text-accent-500">{t('debts.payments')}</span>
+                      <ul className="space-y-1">
+                        {payments.map((p) => (
+                          <li
+                            key={p.id}
+                            className="flex items-center justify-between gap-2 py-1.5 px-2 rounded-lg bg-accent-50"
+                          >
+                            <span className="text-sm text-accent-700">
+                              {formatCurrency(p.amount)}
+                              <span className="text-accent-500 ml-1 text-xs">
+                                {p.date}
+                                {p.period ? ` · ${p.period}` : ''}
+                              </span>
+                            </span>
+                            <button
+                              onClick={() => onDeletePayment(debt.id, p.id)}
+                              className="p-1.5 rounded text-accent-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                              title={t('debts.removePayment')}
+                              aria-label={t('debts.removePayment')}
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
 
                   <div>
                     <div className="flex justify-between items-center mb-1">

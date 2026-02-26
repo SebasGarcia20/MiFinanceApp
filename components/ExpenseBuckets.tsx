@@ -452,10 +452,10 @@ function ExpenseRow({ expense, bucketConfigs, categories, defaultCategoryId, onU
 
   return (
     <div 
-      className="px-2 py-1.5 sm:py-1 bg-white rounded-lg border border-accent-200 hover:border-primary-300 hover:shadow-soft flex items-center gap-2 group text-xs transition-all duration-200"
+      className="px-2 py-1.5 sm:py-1 bg-white rounded-lg border border-accent-200 hover:border-primary-300 hover:shadow-soft flex items-center group text-xs transition-all duration-200 relative"
     >
-      {/* Content */}
-      <div className="flex items-center gap-2 flex-1 min-w-0 pr-1 sm:pr-0">
+      {/* Content: full width; on mobile reserve space for overlay buttons (amount must stay visible) */}
+      <div className="flex items-center gap-2 flex-1 min-w-0 pr-20 sm:pr-0">
         {expenseCategory?.color && (
           <div
             className="w-2 h-2 rounded-full flex-shrink-0"
@@ -465,8 +465,8 @@ function ExpenseRow({ expense, bucketConfigs, categories, defaultCategoryId, onU
         <div className="font-medium truncate text-accent-800 flex-1 min-w-0">{expense.name}</div>
         <div className="text-primary-600 font-semibold whitespace-nowrap flex-shrink-0">{formatCurrency(expense.amount)}</div>
       </div>
-      {/* Edit/Delete: small icon buttons, same size on mobile and desktop */}
-      <div className="flex gap-1 flex-shrink-0 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-200">
+      {/* Edit/Delete: overlay, no layout space; always visible on touch, show on hover on desktop */}
+      <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1 pl-4 bg-gradient-to-r from-transparent via-white/95 to-white opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-200">
         <button
           type="button"
           onClick={() => setIsEditing(true)}
