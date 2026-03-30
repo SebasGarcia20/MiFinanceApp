@@ -4,6 +4,8 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import { BucketConfig, BucketType } from '@/types';
 import { useIsTouchDevice } from '@/hooks/useIsTouchDevice';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useToast } from '@/components/ToastProvider';
+import { reportError } from '@/lib/reportError';
 
 interface BucketTypeSelectProps {
   value: BucketType;
@@ -121,6 +123,7 @@ export default function BucketManagement({
   onReorder,
 }: BucketManagementProps) {
   const { t } = useTranslation();
+  const toast = useToast();
   const [isAdding, setIsAdding] = useState(false);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const isTouch = useIsTouchDevice();
@@ -217,8 +220,9 @@ export default function BucketManagement({
                   onDelete={() => {
                     try {
                       onDelete(bucket.id);
+                      toast.success(t('common.deleted'));
                     } catch (error) {
-                      alert((error as Error).message || t('buckets.cannotDeleteBucket'));
+                      reportError(error, { t, toast, context: 'Delete bucket' });
                     }
                   }}
                   orderIndex={index}

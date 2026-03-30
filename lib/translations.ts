@@ -20,8 +20,19 @@ export interface Translations {
       step: string;
       of: string;
       remaining: string;
+    saved: string;
+    deleted: string;
     };
-  
+
+  // Error messages for reportError
+  errors: {
+    sessionExpired: string;
+    forbidden: string;
+    notFound: string;
+    server: string;
+    generic: string;
+  };
+
   // Navigation
   nav: {
     overview: string;
@@ -213,6 +224,12 @@ export interface Translations {
     remaining: string;
     contributions: string;
     removeContribution: string;
+    showContributionList: string;
+    hideContributionList: string;
+    activeGoalsSection: string;
+    completedGoalsSection: string;
+    completedGoalsHint: string;
+    goalReached: string;
   };
 
   // Debts Page
@@ -234,6 +251,11 @@ export interface Translations {
     paidOff: string;
     payments: string;
     removePayment: string;
+    showPaymentList: string;
+    hidePaymentList: string;
+    activeDebtsSection: string;
+    paidOffHistorySection: string;
+    paidOffHistoryHint: string;
   };
 
   // Onboarding
@@ -332,6 +354,15 @@ const translations: Record<Language, Translations> = {
       step: 'Paso',
       of: 'de',
       remaining: 'Restante',
+      saved: 'Guardado',
+      deleted: 'Eliminado',
+    },
+    errors: {
+      sessionExpired: 'Sesión expirada. Inicia sesión de nuevo.',
+      forbidden: 'No tienes permiso para realizar esta acción.',
+      notFound: 'No encontrado.',
+      server: 'Error del servidor. Intenta más tarde.',
+      generic: 'Algo salió mal. Intenta de nuevo.',
     },
     nav: {
       overview: 'Resumen',
@@ -511,6 +542,12 @@ const translations: Record<Language, Translations> = {
       remaining: 'Restante:',
       contributions: 'Contribuciones',
       removeContribution: 'Quitar contribución',
+      showContributionList: 'Mostrar historial de contribuciones',
+      hideContributionList: 'Ocultar historial de contribuciones',
+      activeGoalsSection: 'Metas en progreso',
+      completedGoalsSection: 'Metas completadas',
+      completedGoalsHint: 'Metas que ya alcanzaste. Puedes revisarlas o eliminarlas si ya no las necesitas.',
+      goalReached: '¡Meta alcanzada!',
     },
     debts: {
       title: 'Deudas',
@@ -530,6 +567,11 @@ const translations: Record<Language, Translations> = {
       paidOff: '¡Pagada!',
       payments: 'Pagos',
       removePayment: 'Quitar pago',
+      showPaymentList: 'Mostrar historial de pagos',
+      hidePaymentList: 'Ocultar historial de pagos',
+      activeDebtsSection: 'Deudas activas',
+      paidOffHistorySection: 'Deudas pagadas',
+      paidOffHistoryHint: 'Historial de deudas que ya saldaste. Puedes revisarlas o eliminarlas si ya no las necesitas.',
     },
     onboarding: {
       welcome: '¡Bienvenido a Flowly!',
@@ -614,6 +656,15 @@ const translations: Record<Language, Translations> = {
       step: 'Step',
       of: 'of',
       remaining: 'Remaining',
+      saved: 'Saved',
+      deleted: 'Deleted',
+    },
+    errors: {
+      sessionExpired: 'Session expired. Please sign in again.',
+      forbidden: 'You do not have permission for this action.',
+      notFound: 'Not found.',
+      server: 'Server error. Please try again later.',
+      generic: 'Something went wrong. Please try again.',
     },
     nav: {
       overview: 'Overview',
@@ -793,6 +844,12 @@ const translations: Record<Language, Translations> = {
       remaining: 'Remaining:',
       contributions: 'Contributions',
       removeContribution: 'Remove contribution',
+      showContributionList: 'Show contribution history',
+      hideContributionList: 'Hide contribution history',
+      activeGoalsSection: 'Active goals',
+      completedGoalsSection: 'Completed goals',
+      completedGoalsHint: 'Goals you have fully funded. Scroll here for reference, or delete a card if you no longer need it.',
+      goalReached: 'Goal reached!',
     },
     debts: {
       title: 'Debts',
@@ -812,6 +869,11 @@ const translations: Record<Language, Translations> = {
       paidOff: 'Paid off!',
       payments: 'Payments',
       removePayment: 'Remove payment',
+      showPaymentList: 'Show payment history',
+      hidePaymentList: 'Hide payment history',
+      activeDebtsSection: 'Active debts',
+      paidOffHistorySection: 'Paid off',
+      paidOffHistoryHint: 'Debts you have fully paid. Scroll here for reference, or delete a card if you no longer need it.',
     },
     onboarding: {
       welcome: 'Welcome to Flowly!',

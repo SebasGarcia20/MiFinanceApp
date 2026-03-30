@@ -1,10 +1,12 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { BucketPayment, ExpenseBucket, FixedPayment, BucketConfig } from '@/types';
 import { formatCurrency, parseCurrencyInput } from '@/lib/currency';
 import { getPreviousPeriod, formatPeriodDisplay, PeriodFormat } from '@/lib/date';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useToast } from '@/components/ToastProvider';
+import { reportError } from '@/lib/reportError';
 
 /** Ordinal for day: 1st, 2nd, 3rd, 4th, ... */
 function ordinalDay(day: number): string {
@@ -71,6 +73,9 @@ export default function FixedPayments({
   onAddBucketPayment,
 }: FixedPaymentsProps) {
   const { t } = useTranslation();
+  const toast = useToast();
+  const bucketPaymentsRef = useRef(bucketPayments);
+  bucketPaymentsRef.current = bucketPayments;
   const bucketMap = useMemo(() => {
     const map = new Map<string, BucketConfig>();
     bucketConfigs.forEach(b => map.set(b.id, b));
@@ -112,7 +117,7 @@ export default function FixedPayments({
         if (cancelled) return;
         const bucketId = bucketConfig.id;
         const amount = previousMonthExpenses[bucketId] || 0;
-        const existing = bucketPayments.find(bp => bp.bucket === bucketId);
+        const existing = bucketPaymentsRef.current.find(bp => bp.bucket === bucketId);
         if (existing) {
           if (existing.amount !== amount) {
             try {
@@ -145,7 +150,8 @@ export default function FixedPayments({
       }
     })();
     return () => { cancelled = true; };
-  }, [canSyncBucketPayments, previousMonthExpenses, bucketPayments, bucketConfigs, onAddBucketPayment, onUpdateBucketPayment, currentPeriod]);
+    // bucketPayments via ref only — do not depend on bucketPayments here or toggling "paid" re-runs sync and can race with PATCH
+  }, [canSyncBucketPayments, previousMonthExpenses, bucketConfigs, onAddBucketPayment, onUpdateBucketPayment, currentPeriod]);
 
   const handleAddFixed = () => {
     if (!newName.trim() || !newAmount) return;
@@ -176,8 +182,12 @@ export default function FixedPayments({
     setIsAddingFixed(false);
   };
 
-  const handleTogglePaid = (id: string, paid: boolean) => {
-    onUpdateBucketPayment(id, { paid });
+  const handleTogglePaid = async (id: string, paid: boolean) => {
+    try {
+      await onUpdateBucketPayment(id, { paid });
+    } catch (err) {
+      reportError(err, { t, toast, context: 'Bucket payment paid' });
+    }
   };
 
   // Only count bucket payments with amount > 0 (hide "previous period" rows when that period had no expenses, e.g. December)
@@ -527,7 +537,7 @@ function RecurringPaymentRow({ payment, isPaid, viewedPeriod, onUpdate, onDelete
         isPaid
           ? 'border-green-200 bg-green-50/30 opacity-75'
           : isOverdue
-          ? 'border-red-200 bg-red-50/30'
+          ? 'border-red-300'
           : 'border-accent-200 hover:border-primary-300 hover:shadow-soft'
       }`}
     >
@@ -539,8 +549,8 @@ function RecurringPaymentRow({ payment, isPaid, viewedPeriod, onUpdate, onDelete
           className="w-4 h-4 rounded border-accent-300 text-primary-400 focus:ring-primary-400 focus:ring-1 cursor-pointer flex-shrink-0"
         />
         <div className="flex-1 min-w-0 leading-tight">
-          <div className="flex items-center gap-2">
-            <span className={`text-xs font-semibold truncate ${isPaid ? 'line-through text-accent-400' : 'text-accent-800'}`}>
+          <div className="flex items-center gap-2 min-w-0">
+            <span className={`text-xs font-semibold truncate min-w-0 ${isPaid ? 'line-through text-accent-400' : 'text-accent-800'}`}>
               {payment.name}
             </span>
             {isPaid && (
@@ -562,11 +572,6 @@ function RecurringPaymentRow({ payment, isPaid, viewedPeriod, onUpdate, onDelete
         <div className={`text-xs font-bold whitespace-nowrap ml-2 flex-shrink-0 ${isPaid ? 'text-accent-400' : 'text-primary-600'}`}>
           {formatCurrency(payment.amount)}
         </div>
-        {isOverdue && !isPaid && (
-          <span className="text-[10px] bg-red-100 text-red-700 px-1.5 py-0.5 rounded-full font-medium flex-shrink-0 ml-1">
-            Overdue
-          </span>
-        )}
       </div>
       {/* Absolutely positioned overlay for Edit/Delete buttons - appears on hover */}
       <div className="absolute right-2 top-1/2 -translate-y-1/2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none group-hover:pointer-events-auto bg-white/95 backdrop-blur-sm px-1 py-0.5 rounded shadow-sm">
@@ -590,7 +595,7 @@ function RecurringPaymentRow({ payment, isPaid, viewedPeriod, onUpdate, onDelete
 interface BucketPaymentRowProps {
   payment: BucketPayment;
   bucketConfigs: BucketConfig[];
-  onTogglePaid: (id: string, paid: boolean) => void;
+  onTogglePaid: (id: string, paid: boolean) => void | Promise<void>;
 }
 
 function BucketPaymentRow({ payment, bucketConfigs, onTogglePaid }: BucketPaymentRowProps) {
@@ -625,7 +630,7 @@ function BucketPaymentRow({ payment, bucketConfigs, onTogglePaid }: BucketPaymen
         payment.paid 
           ? 'border-green-200 bg-green-50/30 opacity-75' 
           : isOverdue
-          ? 'border-red-200 bg-red-50/30'
+          ? 'border-red-300'
           : 'border-accent-200 hover:border-primary-300 hover:shadow-soft'
       }`}
     >
@@ -633,19 +638,16 @@ function BucketPaymentRow({ payment, bucketConfigs, onTogglePaid }: BucketPaymen
         <input
           type="checkbox"
           checked={payment.paid}
-          onChange={(e) => onTogglePaid(payment.id, e.target.checked)}
+          onChange={(e) => {
+            void onTogglePaid(payment.id, e.target.checked);
+          }}
           className="w-4 h-4 rounded border-accent-300 text-primary-400 focus:ring-primary-400 focus:ring-1 cursor-pointer flex-shrink-0"
         />
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <span className={`text-xs font-semibold truncate ${payment.paid ? 'line-through text-accent-400' : 'text-accent-800'}`}>
+          <div className="flex items-center gap-2 min-w-0">
+            <span className={`text-xs font-semibold truncate min-w-0 ${payment.paid ? 'line-through text-accent-400' : 'text-accent-800'}`}>
               {bucketConfig?.name || payment.bucket}
             </span>
-            {isOverdue && !payment.paid && (
-              <span className="text-xs bg-red-100 text-red-700 px-1 py-0.5 rounded-full font-medium flex-shrink-0">
-                Overdue
-              </span>
-            )}
             {payment.paid && (
               <span className="text-xs bg-green-100 text-green-700 px-1 py-0.5 rounded-full font-medium flex-shrink-0">
                 Paid

@@ -2,8 +2,12 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Debt, DebtPayment } from '@/types';
+import { useToast } from '@/components/ToastProvider';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export function useDebtsData() {
+  const toast = useToast();
+  const { t } = useTranslation();
   const [debts, setDebts] = useState<Debt[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -43,8 +47,9 @@ export function useDebtsData() {
     if (!res.ok) throw new Error('Failed to create debt');
     const newDebt = await res.json();
     setDebts((prev) => [...prev, newDebt]);
+    toast.success(t('common.saved'));
     return newDebt;
-  }, [debts.length]);
+  }, [debts.length, toast, t]);
 
   const updateDebt = useCallback(async (id: string, updates: Partial<Pick<Debt, 'name' | 'totalAmount'>>) => {
     const res = await fetch(`/api/debts/${id}`, {
@@ -55,14 +60,16 @@ export function useDebtsData() {
     if (!res.ok) throw new Error('Failed to update debt');
     const updated = await res.json();
     setDebts((prev) => prev.map((d) => (d.id === id ? updated : d)));
+    toast.success(t('common.saved'));
     return updated;
-  }, []);
+  }, [toast, t]);
 
   const deleteDebt = useCallback(async (id: string) => {
     const res = await fetch(`/api/debts/${id}`, { method: 'DELETE' });
     if (!res.ok) throw new Error('Failed to delete debt');
     setDebts((prev) => prev.filter((d) => d.id !== id));
-  }, []);
+    toast.success(t('common.deleted'));
+  }, [toast, t]);
 
   const addPayment = useCallback(async (debtId: string, amount: number, period?: string) => {
     const res = await fetch(`/api/debts/${debtId}/payments`, {
@@ -83,8 +90,9 @@ export function useDebtsData() {
         return { ...d, payments };
       })
     );
+    toast.success(t('common.saved'));
     return payment;
-  }, []);
+  }, [toast, t]);
 
   const deletePayment = useCallback(async (debtId: string, paymentId: string) => {
     const res = await fetch(`/api/debts/${debtId}/payments/${paymentId}`, { method: 'DELETE' });
@@ -96,7 +104,8 @@ export function useDebtsData() {
         return { ...d, payments };
       })
     );
-  }, []);
+    toast.success(t('common.deleted'));
+  }, [toast, t]);
 
   return {
     debts,

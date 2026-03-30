@@ -3,6 +3,7 @@
 import { SessionProvider } from 'next-auth/react';
 import { SettingsProvider } from '@/components/SettingsProvider';
 import { LanguageProvider } from '@/components/LanguageProvider';
+import ToastProvider from '@/components/ToastProvider';
 import type { Language } from '@/lib/translations';
 
 interface ProvidersProps {
@@ -17,9 +18,11 @@ export default function Providers({ children, initialLanguage }: ProvidersProps)
       refetchOnWindowFocus={false}
     >
       <LanguageProvider initialLanguage={initialLanguage}>
-        <SettingsProvider>
-          {children}
-        </SettingsProvider>
+        <ToastProvider>
+          <SettingsProvider>
+            {children}
+          </SettingsProvider>
+        </ToastProvider>
       </LanguageProvider>
     </SessionProvider>
   );

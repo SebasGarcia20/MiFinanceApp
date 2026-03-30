@@ -1,6 +1,9 @@
 'use client';
 
 import { useRef, useState } from 'react';
+import { useTranslation } from '@/hooks/useTranslation';
+import { useToast } from '@/components/ToastProvider';
+import { reportError } from '@/lib/reportError';
 
 interface ExportImportProps {
   onExport: () => string;
@@ -8,6 +11,8 @@ interface ExportImportProps {
 }
 
 export default function ExportImport({ onExport, onImport }: ExportImportProps) {
+  const { t } = useTranslation();
+  const toast = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [showSuccess, setShowSuccess] = useState(false);
 
@@ -40,7 +45,7 @@ export default function ExportImport({ onExport, onImport }: ExportImportProps) 
         setShowSuccess(true);
         setTimeout(() => setShowSuccess(false), 3000);
       } catch (error) {
-        alert('Error importing data: ' + (error instanceof Error ? error.message : 'Invalid format'));
+        reportError(error, { t, toast, context: 'Import' });
       }
     };
     reader.readAsText(file);

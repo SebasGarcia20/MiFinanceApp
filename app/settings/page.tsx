@@ -6,10 +6,13 @@ import Sidebar from '@/components/Sidebar';
 import BottomNav from '@/components/BottomNav';
 import { loadSettings, updateSettings, AppSettings } from '@/lib/settings';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useToast } from '@/components/ToastProvider';
+import { reportError } from '@/lib/reportError';
 import type { Category } from '@/types';
 
 export default function SettingsPage() {
   const { t } = useTranslation();
+  const toast = useToast();
   const { data: session } = useSession();
   const [isMounted, setIsMounted] = useState(false);
   const [settings, setSettings] = useState<AppSettings>(() => {
@@ -167,13 +170,13 @@ export default function SettingsPage() {
         setNewCategoryName('');
         setNewCategoryColor('#6B7280');
         setIsAddingCategory(false);
+        toast.success(t('common.saved'));
       } else {
-        const error = await response.json();
-        alert(error.error || t('messages.error'));
+        const err = await response.json();
+        toast.error(err.error || t('errors.generic'));
       }
     } catch (error) {
-      console.error('Error adding category:', error);
-      alert(t('messages.error'));
+      reportError(error, { t, toast, context: 'Add category' });
     }
   };
 
@@ -196,13 +199,13 @@ export default function SettingsPage() {
         setEditingCategoryId(null);
         setEditCategoryName('');
         setEditCategoryColor('');
+        toast.success(t('common.saved'));
       } else {
-        const error = await response.json();
-        alert(error.error || t('messages.error'));
+        const err = await response.json();
+        toast.error(err.error || t('errors.generic'));
       }
     } catch (error) {
-      console.error('Error updating category:', error);
-      alert(t('messages.error'));
+      reportError(error, { t, toast, context: 'Update category' });
     }
   };
 
@@ -218,13 +221,13 @@ export default function SettingsPage() {
 
       if (response.ok) {
         setCategories(categories.filter(c => c.id !== id));
+        toast.success(t('common.deleted'));
       } else {
-        const error = await response.json();
-        alert(error.error || t('messages.error'));
+        const err = await response.json();
+        toast.error(err.error || t('errors.generic'));
       }
     } catch (error) {
-      console.error('Error deleting category:', error);
-      alert(t('messages.error'));
+      reportError(error, { t, toast, context: 'Delete category' });
     }
   };
 

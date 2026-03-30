@@ -2,8 +2,12 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { SavingsGoal, SavingsContribution } from '@/types';
+import { useToast } from '@/components/ToastProvider';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export function useSavingsData() {
+  const toast = useToast();
+  const { t } = useTranslation();
   const [goals, setGoals] = useState<SavingsGoal[]>([]);
   const [contributions, setContributions] = useState<SavingsContribution[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -65,8 +69,9 @@ export function useSavingsData() {
       if (!res.ok) throw new Error('Failed to create savings goal');
       const newGoal = await res.json();
       setGoals((prev) => [...prev, newGoal]);
+      toast.success(t('common.saved'));
     },
-    [goals.length]
+    [goals.length, toast, t]
   );
 
   const updateGoal = useCallback(
@@ -79,8 +84,9 @@ export function useSavingsData() {
       if (!res.ok) throw new Error('Failed to update savings goal');
       const updated = await res.json();
       setGoals((prev) => prev.map((g) => (g.id === id ? updated : g)));
+      toast.success(t('common.saved'));
     },
-    []
+    [toast, t]
   );
 
   const deleteGoal = useCallback(async (id: string) => {
@@ -88,7 +94,8 @@ export function useSavingsData() {
     if (!res.ok) throw new Error('Failed to delete savings goal');
     setGoals((prev) => prev.filter((g) => g.id !== id));
     setContributions((prev) => prev.filter((c) => c.goalId !== id));
-  }, []);
+    toast.success(t('common.deleted'));
+  }, [toast, t]);
 
   const addContribution = useCallback(
     async (contributionData: Omit<SavingsContribution, 'id'>) => {
@@ -100,8 +107,9 @@ export function useSavingsData() {
       if (!res.ok) throw new Error('Failed to add contribution');
       const newContribution = await res.json();
       setContributions((prev) => [...prev, newContribution]);
+      toast.success(t('common.saved'));
     },
-    []
+    [toast, t]
   );
 
   const deleteContribution = useCallback(async (id: string) => {
@@ -110,7 +118,8 @@ export function useSavingsData() {
     });
     if (!res.ok) throw new Error('Failed to delete contribution');
     setContributions((prev) => prev.filter((c) => c.id !== id));
-  }, []);
+    toast.success(t('common.deleted'));
+  }, [toast, t]);
 
   return {
     goals,

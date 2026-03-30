@@ -6,6 +6,8 @@ import { formatCurrency } from '@/lib/currency';
 import { parseCurrencyInput } from '@/lib/currency';
 import CategorySelector from '@/components/CategorySelector';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useToast } from '@/components/ToastProvider';
+import { reportError } from '@/lib/reportError';
 
 interface ExpenseBucketsProps {
   expenses: Expense[];
@@ -216,6 +218,7 @@ function ExpenseBucket({
   onDelete,
 }: ExpenseBucketProps) {
   const { t } = useTranslation();
+  const toast = useToast();
   const [name, setName] = useState('');
   const [amount, setAmount] = useState('');
   const [selectedCategoryId, setSelectedCategoryId] = useState(defaultCategoryId);
@@ -238,12 +241,13 @@ function ExpenseBucket({
       });
       setAmount('');
       setName('');
+      toast.success(t('common.saved'));
       setTimeout(() => {
         const nameInput = document.querySelector(`#bucket-${bucket}-name`) as HTMLInputElement;
         nameInput?.focus();
       }, 0);
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to create expense');
+      reportError(err, { t, toast, context: 'Add expense' });
     } finally {
       setIsAdding(false);
     }
